@@ -1,84 +1,99 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 
 test.describe('Recipe Full Flow', () => {
-  // Generate random recipe data
-  const recipeData = {
-    title: faker.food.dish(),
-    description: faker.food.description(),
-    prepTime: `${faker.number.int({ min: 5, max: 30 })} minutes`,
-    cookTime: `${faker.number.int({ min: 10, max: 120 })} minutes`,
-    servings: faker.number.int({ min: 2, max: 8 }).toString(),
-    difficulty: faker.helpers.arrayElement(['Easy', 'Medium', 'Hard']),
-    cuisine: faker.helpers.arrayElement(['Italian', 'Mexican', 'Chinese', 'Indian', 'American']),
-    ingredients: [
-      {
-        quantity: faker.number.float({ min: 0.5, max: 3, fractionDigits: 1 }).toString(),
-        unit: faker.helpers.arrayElement(['cups', 'tbsp', 'tsp', 'oz', 'lbs']),
-        item: faker.food.ingredient(),
-        notes: faker.lorem.words(3)
-      },
-      {
-        quantity: faker.number.int({ min: 1, max: 5 }).toString(),
-        unit: faker.helpers.arrayElement(['cloves', 'pieces', 'whole']),
-        item: faker.food.ingredient(),
-        notes: ''
-      },
-      {
-        quantity: faker.number.float({ min: 0.25, max: 2, fractionDigits: 2 }).toString(),
-        unit: faker.helpers.arrayElement(['cups', 'tbsp', 'tsp']),
-        item: faker.food.ingredient(),
-        notes: faker.lorem.words(2)
-      }
-    ],
-    instructions: [
-      {
-        step: 1,
-        instruction: faker.lorem.sentence(),
-        duration: `${faker.number.int({ min: 2, max: 10 })} minutes`,
-        temperature: ''
-      },
-      {
-        step: 2,
-        instruction: faker.lorem.sentence(),
-        duration: '',
-        temperature: `${faker.number.int({ min: 300, max: 450 })}°F`
-      },
-      {
-        step: 3,
-        instruction: faker.lorem.sentence(),
-        duration: `${faker.number.int({ min: 5, max: 30 })} minutes`,
-        temperature: ''
-      }
-    ],
-    tags: [faker.food.ethnicCategory(), faker.food.adjective()],
-    dietary: faker.helpers.arrayElements(['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'], 2)
-  };
-
-  test.beforeEach(async ({ page }) => {
-    // Use the same login approach as auth.test.ts which works
-    await page.goto('/');
-    
-    // Check if already logged in, if not, login
-    const signInButton = page.getByTestId('sign-in-button');
-    if (await signInButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await signInButton.click();
-      await expect(page).toHaveURL('/auth/login');
-      
-      // Login as admin
-      await page.getByTestId('email-input').fill('a@b.c');
-      await page.getByTestId('password-input').fill('abcabcabc');
+  // Helper function to create a unique test user for each test
+  async function createAndLoginTestUser(page: Page, role: 'admin' | 'reader' = 'admin') {
+    if (role === 'admin') {
+      // For admin tests, use the pre-existing admin account
+      await page.goto('/auth/login');
+      await page.getByTestId('email-input').fill('admin@test.com');
+      await page.getByTestId('password-input').fill('testpassword123');
       await page.getByTestId('login-button').click();
-      
-      // Should redirect to home page
-      await expect(page).toHaveURL('/');
+      await page.waitForURL('/');
+      return { email: 'admin@test.com', password: 'testpassword123' };
     }
     
-    // Wait for page to be fully loaded
-    await page.waitForLoadState('networkidle');
-  });
+    // For reader, create a new user
+    const timestamp = Date.now();
+    const email = `test-reader-${timestamp}@example.com`;
+    const password = 'TestPass123!';
+    const name = `Test Reader ${timestamp}`;
+    
+    await page.goto('/auth/register');
+    await page.getByTestId('name-input').fill(name);
+    await page.getByTestId('register-email-input').fill(email);
+    await page.getByTestId('register-password-input').fill(password);
+    await page.getByTestId('confirm-password-input').fill(password);
+    await page.getByTestId('register-button').click();
+    await page.waitForURL('/');
+    
+    return { email, password };
+  }
+
+  // Helper function to generate unique recipe data for each test
+  function generateRecipeData() {
+    const timestamp = Date.now();
+    return {
+      title: `${faker.food.dish()} ${timestamp}`,
+      description: `${faker.food.description()} - Test ${timestamp}`,
+      prepTime: `${faker.number.int({ min: 5, max: 30 })} minutes`,
+      cookTime: `${faker.number.int({ min: 10, max: 120 })} minutes`,
+      servings: faker.number.int({ min: 2, max: 8 }).toString(),
+      difficulty: faker.helpers.arrayElement(['Easy', 'Medium', 'Hard']),
+      cuisine: faker.helpers.arrayElement(['Italian', 'Mexican', 'Chinese', 'Indian', 'American']),
+      ingredients: [
+        {
+          quantity: faker.number.float({ min: 0.5, max: 3, fractionDigits: 1 }).toString(),
+          unit: faker.helpers.arrayElement(['cups', 'tbsp', 'tsp', 'oz', 'lbs']),
+          item: faker.food.ingredient(),
+          notes: faker.lorem.words(3)
+        },
+        {
+          quantity: faker.number.int({ min: 1, max: 5 }).toString(),
+          unit: faker.helpers.arrayElement(['cloves', 'pieces', 'whole']),
+          item: faker.food.ingredient(),
+          notes: ''
+        },
+        {
+          quantity: faker.number.float({ min: 0.25, max: 2, fractionDigits: 2 }).toString(),
+          unit: faker.helpers.arrayElement(['cups', 'tbsp', 'tsp']),
+          item: faker.food.ingredient(),
+          notes: faker.lorem.words(2)
+        }
+      ],
+      instructions: [
+        {
+          step: 1,
+          instruction: faker.lorem.sentence(),
+          duration: `${faker.number.int({ min: 2, max: 10 })} minutes`,
+          temperature: ''
+        },
+        {
+          step: 2,
+          instruction: faker.lorem.sentence(),
+          duration: '',
+          temperature: `${faker.number.int({ min: 300, max: 450 })}°F`
+        },
+        {
+          step: 3,
+          instruction: faker.lorem.sentence(),
+          duration: `${faker.number.int({ min: 5, max: 30 })} minutes`,
+          temperature: ''
+        }
+      ],
+      tags: [faker.food.ethnicCategory(), faker.food.adjective()],
+      dietary: faker.helpers.arrayElements(['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'], 2)
+    };
+  }
 
   test('should create a new recipe and view it with all details', async ({ page }) => {
+    // Create and login a fresh admin user for this test
+    await createAndLoginTestUser(page, 'admin');
+    
+    // Generate unique recipe data for this test
+    const recipeData = generateRecipeData();
+    
     // Navigate to create recipe page
     await page.click('a:has-text("Add Recipe")');
     await page.waitForURL('/admin/recipes/new');
@@ -241,8 +256,12 @@ test.describe('Recipe Full Flow', () => {
   });
 
   test('should handle recipe with minimal data', async ({ page }) => {
+    // Create and login a fresh admin user for this test
+    await createAndLoginTestUser(page, 'admin');
+    
+    const timestamp = Date.now();
     const minimalRecipe = {
-      title: faker.food.dish(),
+      title: `${faker.food.dish()} ${timestamp}`,
       ingredients: [{
         item: faker.food.ingredient()
       }],
@@ -273,8 +292,12 @@ test.describe('Recipe Full Flow', () => {
   });
 
   test('should allow editing a recipe and viewing updated data', async ({ page }) => {
-    // First create a recipe
-    const originalTitle = faker.food.dish();
+    // Create and login a fresh admin user for this test
+    await createAndLoginTestUser(page, 'admin');
+    
+    // First create a recipe with unique data
+    const timestamp = Date.now();
+    const originalTitle = `${faker.food.dish()} ${timestamp}`;
     
     await page.click('a:has-text("Add Recipe")');
     await page.waitForURL('/admin/recipes/new');
@@ -292,10 +315,10 @@ test.describe('Recipe Full Flow', () => {
     await page.click('a:has-text("Edit Recipe")');
     await page.waitForURL(/\/admin\/recipes\/.*\/edit/);
     
-    // Update the recipe
+    // Update the recipe with new unique data
     const updatedData = {
-      title: faker.food.dish(),
-      description: faker.food.description(),
+      title: `${faker.food.dish()} ${timestamp + 1000}`, // Slightly different timestamp
+      description: `${faker.food.description()} - Updated ${timestamp}`,
       ingredient: faker.food.ingredient(),
       instruction: faker.lorem.sentence()
     };

@@ -1,34 +1,128 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Recipe Viewing Fix Verification', () => {
-  test('recipe detail page loads correctly after fix', async ({ page }) => {
-    // Go directly to home page
-    await page.goto('/');
+  // Helper function to create a unique test user for each test
+  async function createAndLoginTestUser(page: Page, role: 'admin' | 'reader' = 'admin') {
+    if (role === 'admin') {
+      // For admin tests, use the pre-existing admin account
+      await page.goto('/auth/login');
+      await page.getByTestId('email-input').fill('admin@test.com');
+      await page.getByTestId('password-input').fill('testpassword123');
+      await page.getByTestId('login-button').click();
+      await page.waitForURL('/');
+      return { email: 'admin@test.com', password: 'testpassword123' };
+    }
     
-    // Wait for page to load
+    // For reader, create a new user
+    const timestamp = Date.now();
+    const email = `test-reader-${timestamp}@example.com`;
+    const password = 'TestPass123!';
+    const name = `Test Reader ${timestamp}`;
+    
+    await page.goto('/auth/register');
+    await page.getByTestId('name-input').fill(name);
+    await page.getByTestId('register-email-input').fill(email);
+    await page.getByTestId('register-password-input').fill(password);
+    await page.getByTestId('confirm-password-input').fill(password);
+    await page.getByTestId('register-button').click();
+    await page.waitForURL('/');
+    
+    return { email, password };
+  }
+
+  // Helper function to create a test recipe
+  async function createTestRecipe(page: Page, title: string, description: string): Promise<string> {
+    await page.goto('/admin/recipes/new');
     await page.waitForLoadState('networkidle');
     
-    // Check if we can see recipes (they should be visible to all)
-    const recipeCards = page.locator('a[href^="/recipes/"]');
-    const count = await recipeCards.count();
+    await page.fill('input[placeholder="Enter recipe title"]', title);
+    await page.fill('textarea[placeholder="Brief description of the recipe..."]', description);
+    await page.fill('input[placeholder="Ingredient name"]', 'Test ingredient');
+    await page.fill('input[placeholder="Amount"]', '1');
+    await page.fill('input[placeholder="Unit"]', 'cup');
+    await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Test instruction step');
     
-    if (count > 0) {
-      // Get the first recipe title
-      const firstRecipeTitle = await page.locator('h3').first().textContent();
-      console.log('Found recipe:', firstRecipeTitle);
+    await page.click('button:has-text("Create Recipe")');
+    await page.waitForURL(/\/recipes\/[a-z0-9]+/, { timeout: 10000 });
+    
+    const url = page.url();
+    const recipeId = url.split('/').pop() || '';
+    return recipeId;
+  }
+
+  test('recipe detail page loads correctly after fix', async ({ page }) => {
+    // Create admin user and a test recipe
+    await createAndLoginTestUser(page, 'admin');
+    
+    const timestamp = Date.now();
+    const recipeTitle = `Test Recipe Fix ${timestamp}`;
+    const recipeDescription = `This recipe tests the viewing fix ${timestamp}`;
+    
+    const recipeId = await createTestRecipe(page, recipeTitle, recipeDescription);
+    
+    // Navigate directly to the recipe detail page
+    await page.goto(`/recipes/${recipeId}`);
+    
+    // Verify the recipe detail page loaded successfully
+    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
+    
+    // Verify the title matches
+    await expect(page.locator('h1')).toContainText(recipeTitle);
+    
+    // Verify key sections are present
+    await expect(page.locator('h2:has-text("Ingredients")')).toBeVisible();
+    await expect(page.locator('h2:has-text("Instructions")')).toBeVisible();
+    
+    // Verify no error message is shown
+    const errorElement = page.locator('.bg-red-50');
+    await expect(errorElement).not.toBeVisible();
+    
+    // Verify content is displayed
+    await expect(page.locator(`text=${recipeDescription}`)).toBeVisible();
+    await expect(page.locator('text=Test ingredient')).toBeVisible();
+    await expect(page.locator('text=Test instruction step')).toBeVisible();
+  });
+  
+  test('can navigate between multiple recipes', async ({ page }) => {
+    // Create admin user and multiple test recipes
+    await createAndLoginTestUser(page, 'admin');
+    
+    const timestamp = Date.now();
+    const recipes = [
+      {
+        title: `Navigation Recipe 1 ${timestamp}`,
+        description: `First navigation test recipe ${timestamp}`,
+        id: ''
+      },
+      {
+        title: `Navigation Recipe 2 ${timestamp}`,
+        description: `Second navigation test recipe ${timestamp}`,
+        id: ''
+      },
+      {
+        title: `Navigation Recipe 3 ${timestamp}`,
+        description: `Third navigation test recipe ${timestamp}`,
+        id: ''
+      }
+    ];
+    
+    // Create all test recipes
+    for (const recipe of recipes) {
+      recipe.id = await createTestRecipe(page, recipe.title, recipe.description);
+    }
+    
+    // Test navigating to each recipe directly
+    for (let i = 0; i < recipes.length; i++) {
+      const recipe = recipes[i];
       
-      // Click on the first recipe card link
-      await recipeCards.first().click();
+      // Navigate directly to recipe detail page
+      await page.goto(`/recipes/${recipe.id}`);
+      await page.waitForLoadState('networkidle');
       
-      // Wait for navigation to recipe detail page
-      await page.waitForURL(/\/recipes\/[^/]+$/, { timeout: 10000 });
-      
-      // Verify the recipe detail page loaded successfully
-      await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
-      
-      // Verify the title matches
-      const detailTitle = await page.locator('h1').textContent();
-      expect(detailTitle).toBe(firstRecipeTitle);
+      // Verify the recipe loaded correctly
+      await expect(page.locator('h1')).toBeVisible();
+      await expect(page.locator('h1')).toContainText(recipe.title);
+      await expect(page.locator(`text=${recipe.description}`)).toBeVisible();
       
       // Verify key sections are present
       await expect(page.locator('h2:has-text("Ingredients")')).toBeVisible();
@@ -37,56 +131,6 @@ test.describe('Recipe Viewing Fix Verification', () => {
       // Verify no error message is shown
       const errorElement = page.locator('.bg-red-50');
       await expect(errorElement).not.toBeVisible();
-      
-      console.log('✅ Recipe detail page loaded successfully!');
-    } else {
-      console.log('No recipes found on homepage - skipping test');
-      test.skip();
-    }
-  });
-  
-  test('can navigate between multiple recipes', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Check if we have recipes
-    const recipeCards = page.locator('a[href^="/recipes/"]');
-    const count = await recipeCards.count();
-    
-    if (count === 0) {
-      console.log('No recipes found on homepage - skipping test');
-      test.skip();
-      return;
-    }
-    
-    // Get all recipe titles
-    const recipeTitles = await page.locator('h3').allTextContents();
-    console.log(`Found ${recipeTitles.length} recipes`);
-    
-    // Test viewing first 3 recipes (or less if fewer exist)
-    const recipesToTest = Math.min(3, recipeTitles.length);
-    
-    for (let i = 0; i < recipesToTest; i++) {
-      // Go back to home
-      await page.goto('/');
-      await page.waitForLoadState('networkidle');
-      
-      // Get the recipe title
-      const title = await page.locator('h3').nth(i).textContent();
-      console.log(`Testing recipe ${i + 1}: ${title}`);
-      
-      // Click the recipe card link
-      await page.locator('a[href^="/recipes/"]').nth(i).click();
-      
-      // Wait for detail page
-      await page.waitForURL(/\/recipes\/[^/]+$/);
-      await expect(page.locator('h1')).toBeVisible();
-      
-      // Verify title matches
-      const detailTitle = await page.locator('h1').textContent();
-      expect(detailTitle).toBe(title);
-      
-      console.log(`✅ Recipe ${i + 1} loaded successfully`);
     }
   });
 });

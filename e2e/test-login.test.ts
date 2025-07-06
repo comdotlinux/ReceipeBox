@@ -5,9 +5,9 @@ test('verify admin login works', async ({ page }) => {
   await page.goto('/auth/login');
   
   // Fill login form
-  await page.fill('input#email', 'a@b.c');
-  await page.fill('input#password', 'abcabcabc');
-  await page.click('button[type="submit"]');
+  await page.getByTestId('email-input').fill('admin@test.com');
+  await page.getByTestId('password-input').fill('testpassword123');
+  await page.getByTestId('login-button').click();
   
   // Should redirect to home
   await page.waitForURL('/');

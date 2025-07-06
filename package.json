@@ -7,6 +7,7 @@
 		"dev": "vite dev",
 		"dev:full": "./scripts/dev.sh",
 		"pocketbase": "./pocketbase/pocketbase serve --dev",
+		"pocketbase:clear": "./scripts/clear-database.sh",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -18,7 +19,8 @@
 		"test:unit:coverage": "vitest --coverage --run",
 		"test:coverage": "vitest --ui --coverage --open",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"test:fresh": "npm run pocketbase:clear && echo 'Start PocketBase and create admin user, then run: npm run test'"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
