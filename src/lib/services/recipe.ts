@@ -70,7 +70,8 @@ export class RecipeService {
   async getRecipe(id: string): Promise<Recipe> {
     try {
       const result = await pb.client.collection('recipes').getOne(id, {
-        expand: 'created_by,last_modified_by'
+        expand: 'created_by,last_modified_by',
+        filter: `id = "${id}" && is_published = true`
       });
       return result as Recipe;
     } catch (error) {

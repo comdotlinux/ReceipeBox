@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { recipesStore, currentRecipe, isAdmin, pb } from '$lib/stores';
+  import { recipesStore, currentRecipe, isAdmin, isAuthenticated, pb } from '$lib/stores';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import type { Recipe } from '$lib/types';
@@ -10,6 +10,12 @@
   let error = $state('');
 
   onMount(async () => {
+    // Check authentication first
+    if (!$isAuthenticated) {
+      goto('/auth/login');
+      return;
+    }
+
     const recipeId = $page.params.id;
     if (!recipeId) {
       error = 'Recipe ID is required';

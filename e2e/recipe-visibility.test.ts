@@ -147,8 +147,29 @@ test.describe('Recipe Visibility Based on Published Status', () => {
 		const publishedTitle = `Published Recipe for List ${timestamp}`;
 		const unpublishedTitle = `Unpublished Recipe for List ${timestamp}`;
 		
-		await createTestRecipe(page, publishedTitle, `Published description ${timestamp}`);
-		await createTestRecipe(page, unpublishedTitle, `Unpublished description ${timestamp}`);
+		const publishedId = await createTestRecipe(page, publishedTitle, `Published description ${timestamp}`);
+		const unpublishedId = await createTestRecipe(page, unpublishedTitle, `Unpublished description ${timestamp}`);
+		
+		console.log('Created recipes:', publishedId, unpublishedId);
+		
+		// Verify admin can see the recipe first
+		await page.goto(`/recipes/${publishedId}`);
+		const adminCanSee = await page.locator(`h1:has-text("${publishedTitle}")`).isVisible().catch(() => false);
+		console.log('Admin can see published recipe:', adminCanSee);
+		
+		// Debug: Check what's actually on the admin's recipe page
+		if (!adminCanSee) {
+			console.log('Admin recipe page URL:', page.url());
+			console.log('Admin recipe page title:', await page.title());
+			const hasAdminError = await page.locator('.bg-red-50').isVisible().catch(() => false);
+			if (hasAdminError) {
+				const errorText = await page.locator('.bg-red-50').textContent();
+				console.log('Admin error message:', errorText);
+			}
+		}
+		
+		// Wait longer for database consistency and indexing
+		await page.waitForTimeout(3000);
 		
 		// Create a reader user in a new context
 		const readerContext = await context.browser()?.newContext();
@@ -157,6 +178,54 @@ test.describe('Recipe Visibility Based on Published Status', () => {
 		
 		// Go to home page and check visible recipes
 		await readerPage.goto('/');
+		await readerPage.waitForLoadState('networkidle');
+		
+		// Force a reload to ensure fresh data
+		await readerPage.reload();
+		await readerPage.waitForLoadState('networkidle');
+		
+		// Additional wait for any async data loading
+		await readerPage.waitForTimeout(2000);
+		
+		// Verify recipes are accessible directly by ID first
+		console.log('Testing direct access to published recipe:', publishedId);
+		await readerPage.goto(`/recipes/${publishedId}`);
+		const recipeAccessible = await readerPage.locator(`h1:has-text("${publishedTitle}")`).isVisible().catch(() => false);
+		console.log('Published recipe directly accessible:', recipeAccessible);
+		
+		// Debug: Check if there's an authentication or permission error
+		const hasErrorPage = await readerPage.locator('.bg-red-50').isVisible().catch(() => false);
+		console.log('Error page shown:', hasErrorPage);
+		if (hasErrorPage) {
+			const errorText = await readerPage.locator('.bg-red-50').textContent();
+			console.log('Error message:', errorText);
+		}
+		
+		// Return to homepage
+		await readerPage.goto('/');
+		await readerPage.waitForLoadState('networkidle');
+		
+		// Debug: Take screenshot and check what's on the page
+		await readerPage.screenshot({ path: 'debug-recipe-list.png' });
+		
+		console.log('Page title:', await readerPage.title());
+		console.log('Page URL:', readerPage.url());
+		console.log('Body text contains published title:', await readerPage.locator('body').textContent().then(text => text?.includes(publishedTitle)));
+		console.log('Body text contains unpublished title:', await readerPage.locator('body').textContent().then(text => text?.includes(unpublishedTitle)));
+		
+		// Check if recipe list component is present
+		const recipeListCount = await readerPage.locator('[data-testid*="recipe"], .recipe-card, a[href^="/recipes/"]').count();
+		console.log('Recipe elements found:', recipeListCount);
+		
+		// Log what recipes are actually shown
+		const allRecipeLinks = await readerPage.locator('a[href^="/recipes/"]').all();
+		console.log('Found recipe links:', allRecipeLinks.length);
+		for (let i = 0; i < Math.min(allRecipeLinks.length, 5); i++) {
+			const link = allRecipeLinks[i];
+			const text = await link.textContent();
+			const href = await link.getAttribute('href');
+			console.log(`Recipe ${i}: "${text}" -> ${href}`);
+		}
 		
 		// With current implementation, both recipes should be visible since is_published=true for all
 		await expect(readerPage.locator(`text=${publishedTitle}`)).toBeVisible();
