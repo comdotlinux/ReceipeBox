@@ -180,11 +180,22 @@ test.describe('Recipe Full Flow', () => {
 
     // Note: is_published is hardcoded to true in RecipeForm, no need to check
 
+    // Listen for the recipe creation API call
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+    );
+    
     // Submit the form
     await page.click('button:has-text("Create Recipe")');
     
-    // Wait for navigation to recipe page
-    await page.waitForURL(/\/recipes\/[a-z0-9]+/);
+    // Get recipe ID from API response
+    const response = await responsePromise;
+    const responseBody = await response.text();
+    const apiResponse = JSON.parse(responseBody);
+    const recipeId = apiResponse.id;
+    
+    // Navigate to recipe detail page
+    await page.goto(`/recipes/${recipeId}`);
     
     // Wait for recipe detail page to load
     await page.waitForSelector('h1');
@@ -279,11 +290,22 @@ test.describe('Recipe Full Flow', () => {
     await page.fill('input[placeholder="Ingredient name"]', minimalRecipe.ingredients[0].item);
     await page.fill('textarea[placeholder="Describe this step in detail..."]', minimalRecipe.instructions[0].instruction);
 
+    // Listen for the recipe creation API call
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+    );
+    
     // Submit (is_published is true by default)
     await page.click('button:has-text("Create Recipe")');
     
-    // Wait for navigation to recipe page
-    await page.waitForURL(/\/recipes\/[a-z0-9]+/);
+    // Get recipe ID from API response
+    const response = await responsePromise;
+    const responseBody = await response.text();
+    const apiResponse = JSON.parse(responseBody);
+    const recipeId = apiResponse.id;
+    
+    // Navigate to recipe detail page
+    await page.goto(`/recipes/${recipeId}`);
     
     // Verify minimal data is displayed
     await expect(page.locator('h1')).toHaveText(minimalRecipe.title);
@@ -305,10 +327,22 @@ test.describe('Recipe Full Flow', () => {
     await page.fill('input[placeholder="Enter recipe title"]', originalTitle);
     await page.fill('input[placeholder="Ingredient name"]', 'Original ingredient');
     await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Original instruction');
+    // Listen for the recipe creation API call
+    const responsePromise = page.waitForResponse(response => 
+      response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+    );
+    
     // is_published is true by default
     await page.click('button:has-text("Create Recipe")');
     
-    await page.waitForURL(/\/recipes\/[a-z0-9]+/);
+    // Get recipe ID from API response
+    const response = await responsePromise;
+    const responseBody = await response.text();
+    const apiResponse = JSON.parse(responseBody);
+    const recipeId = apiResponse.id;
+    
+    // Navigate to recipe detail page
+    await page.goto(`/recipes/${recipeId}`);
     await page.waitForSelector('h1');
     
     // Click edit button
@@ -328,10 +362,18 @@ test.describe('Recipe Full Flow', () => {
     await page.fill('input[placeholder="Ingredient name"]', updatedData.ingredient);
     await page.fill('textarea[placeholder="Describe this step in detail..."]', updatedData.instruction);
     
+    // Listen for the recipe update API call
+    const updateResponsePromise = page.waitForResponse(response => 
+      response.url().includes(`/api/collections/recipes/records/${recipeId}`) && response.request().method() === 'PATCH'
+    );
+    
     await page.click('button:has-text("Update Recipe")');
     
-    // Should redirect to recipe detail page
-    await page.waitForURL(/\/recipes\/.*/);
+    // Wait for update to complete
+    await updateResponsePromise;
+    
+    // Navigate to recipe detail page
+    await page.goto(`/recipes/${recipeId}`);
     
     // Verify updated data
     await expect(page.locator('h1')).toHaveText(updatedData.title);

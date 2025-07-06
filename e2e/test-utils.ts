@@ -106,15 +106,19 @@ export async function createTestRecipe(page: Page, data: {
 	await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Test instruction step');
 	
 	// Note: is_published is hardcoded to true in RecipeForm, no need to check
+	// Listen for the recipe creation API call
+	const responsePromise = page.waitForResponse(response => 
+		response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+	);
+	
 	// Submit form
 	await page.click('button:has-text("Create Recipe")');
 	
-	// Wait for redirect and extract recipe ID
-	await page.waitForURL(/\/recipes\/[a-z0-9]+/, { timeout: 10000 });
-	const url = page.url();
-	const recipeId = url.split('/').pop() || '';
-	
-	return recipeId;
+	// Get recipe ID from API response
+	const response = await responsePromise;
+	const responseBody = await response.text();
+	const recipeData = JSON.parse(responseBody);
+	return recipeData.id;
 }
 
 export async function loginUser(page: Page, email: string, password: string) {

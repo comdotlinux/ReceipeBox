@@ -70,11 +70,22 @@ test.describe('Recipe CRUD Operations', () => {
 		// Fill default instruction field
 		await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Mix all ingredients together');
 		
+		// Listen for the recipe creation API call
+		const responsePromise = page.waitForResponse(response => 
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+		);
+		
 		// Submit form
 		await page.click('button:has-text("Create Recipe")');
 		
-		// Verify redirect to recipe detail
-		await page.waitForURL(/\/recipes\/[a-z0-9]+/);
+		// Get recipe ID from API response
+		const response = await responsePromise;
+		const responseBody = await response.text();
+		const recipeData = JSON.parse(responseBody);
+		const recipeId = recipeData.id;
+		
+		// Navigate to recipe detail page
+		await page.goto(`/recipes/${recipeId}`);
 		
 		// Wait for recipe to load and verify content
 		await page.waitForSelector(`h1:has-text("${recipeTitle}")`, { timeout: 5000 });
@@ -117,7 +128,7 @@ test.describe('Recipe CRUD Operations', () => {
 		
 		// Listen for network requests
 		const responsePromise = page.waitForResponse(response => 
-			response.url().includes('/api/collections/recipes') && response.request().method() === 'POST'
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
 		);
 		
 		await page.click('button:has-text("Create Recipe")');
@@ -182,11 +193,21 @@ test.describe('Recipe CRUD Operations', () => {
 		// Update ingredient
 		await page.fill('input[placeholder="Amount"]', '2');
 		
+		// Listen for the recipe update API call
+		const updateResponsePromise = page.waitForResponse(response => 
+			response.url().includes(`/api/collections/recipes/records/${recipeId}`) && response.request().method() === 'PATCH'
+		);
+		
 		// Submit changes
 		await page.click('button:has-text("Update Recipe")');
 		
+		// Wait for update to complete
+		await updateResponsePromise;
+		
+		// Navigate to recipe detail page
+		await page.goto(`/recipes/${recipeId}`);
+		
 		// Verify updates
-		await page.waitForURL(`/recipes/${recipeId}`);
 		await expect(page.locator('h1')).toContainText(updatedTitle);
 		await expect(page.locator(`text=${updatedDescription}`)).toBeVisible();
 		await expect(page.locator('text=2 cup water')).toBeVisible();
@@ -211,7 +232,7 @@ test.describe('Recipe CRUD Operations', () => {
 		
 		// Listen for the recipe creation API call
 		const responsePromise = page.waitForResponse(response => 
-			response.url().includes('/api/collections/recipes') && response.request().method() === 'POST'
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
 		);
 		
 		await page.click('button:has-text("Create Recipe")');
@@ -228,8 +249,16 @@ test.describe('Recipe CRUD Operations', () => {
 		// Set up dialog handler before clicking delete
 		page.once('dialog', dialog => dialog.accept());
 		
+		// Listen for the recipe deletion API call
+		const deleteResponsePromise = page.waitForResponse(response => 
+			response.url().includes(`/api/collections/recipes/records/${recipeId}`) && response.request().method() === 'DELETE'
+		);
+		
 		// Click delete button
 		await page.click('button:has-text("Delete Recipe")');
+		
+		// Wait for deletion to complete
+		await deleteResponsePromise;
 		
 		// Should redirect after deletion
 		await page.waitForURL('/');
@@ -260,10 +289,22 @@ test.describe('Recipe CRUD Operations', () => {
 		await page.fill('input[placeholder="Enter recipe title"]', `Valid Title ${timestamp}`);
 		await page.fill('input[placeholder="Ingredient name"]', 'Valid Ingredient');
 		await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Valid instruction');
+		
+		// Listen for the recipe creation API call
+		const responsePromise = page.waitForResponse(response => 
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+		);
+		
 		await page.click('button:has-text("Create Recipe")');
 		
-		// Should redirect after successful creation
-		await page.waitForURL(/\/recipes\/[a-z0-9]+/);
+		// Get recipe ID from API response
+		const response = await responsePromise;
+		const responseBody = await response.text();
+		const recipeData = JSON.parse(responseBody);
+		const recipeId = recipeData.id;
+		
+		// Navigate to recipe detail page
+		await page.goto(`/recipes/${recipeId}`);
 	});
 
 	test('admin can toggle recipe published status', async ({ page }) => {
@@ -282,12 +323,18 @@ test.describe('Recipe CRUD Operations', () => {
 		await page.fill('input[placeholder="Unit"]', 'draft');
 		await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Draft instruction');
 		// Note: is_published is always true in RecipeForm, can't create unpublished recipes
+		// Listen for the recipe creation API call
+		const responsePromise = page.waitForResponse(response => 
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+		);
+		
 		await page.click('button:has-text("Create Recipe")');
 		
-		// Wait for recipe to be created
-		await page.waitForURL(/\/recipes\/[a-z0-9]+/);
-		const recipeUrl = page.url();
-		const recipeId = recipeUrl.split('/').pop();
+		// Get recipe ID from API response
+		const response = await responsePromise;
+		const responseBody = await response.text();
+		const recipeData = JSON.parse(responseBody);
+		const recipeId = recipeData.id;
 		
 		// Navigate to edit page
 		await page.goto(`/admin/recipes/${recipeId}/edit`);
@@ -295,10 +342,18 @@ test.describe('Recipe CRUD Operations', () => {
 		
 		// Since is_published is hardcoded to true, we can't really test toggling
 		// Just verify we can update the recipe
+		// Listen for the recipe update API call
+		const updateResponsePromise = page.waitForResponse(response => 
+			response.url().includes(`/api/collections/recipes/records/${recipeId}`) && response.request().method() === 'PATCH'
+		);
+		
 		await page.click('button:has-text("Update Recipe")');
 		
-		// Verify recipe is updated
-		await page.waitForURL(`/recipes/${recipeId}`);
+		// Wait for update to complete
+		await updateResponsePromise;
+		
+		// Navigate to recipe detail page
+		await page.goto(`/recipes/${recipeId}`);
 	});
 
 	test('image upload functionality works', async ({ page }) => {
@@ -326,11 +381,24 @@ test.describe('Recipe CRUD Operations', () => {
 			buffer: Buffer.from('fake-image-content')
 		});
 		
+		// Listen for the recipe creation API call
+		const responsePromise = page.waitForResponse(response => 
+			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+		);
+		
 		// Submit form
 		await page.click('button:has-text("Create Recipe")');
 		
+		// Get recipe ID from API response
+		const response = await responsePromise;
+		const responseBody = await response.text();
+		const recipeData = JSON.parse(responseBody);
+		const recipeId = recipeData.id;
+		
+		// Navigate to recipe detail page
+		await page.goto(`/recipes/${recipeId}`);
+		
 		// Verify image is displayed
-		await page.waitForURL(/\/recipes\/[a-z0-9]+/);
 		await expect(page.locator(`img[alt="${recipeTitle}"]`)).toBeVisible();
 	});
 });

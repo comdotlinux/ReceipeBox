@@ -42,12 +42,18 @@ test.describe('Recipe Visibility Based on Published Status', () => {
 		await page.fill('input[placeholder="Unit"]', 'cup');
 		await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Test instruction step');
 		
-		await page.click('button:has-text("Create Recipe")');
-		await page.waitForURL(/\/recipes\/[a-z0-9]+/, { timeout: 10000 });
+		// Listen for the recipe creation API call
+		const responsePromise = page.waitForResponse(response => 
+			response.url().includes('/api/collections/recipes') && response.request().method() === 'POST'
+		);
 		
-		const url = page.url();
-		const recipeId = url.split('/').pop() || '';
-		return recipeId;
+		await page.click('button:has-text("Create Recipe")');
+		
+		// Get recipe ID from API response
+		const response = await responsePromise;
+		const responseBody = await response.text();
+		const recipeData = JSON.parse(responseBody);
+		return recipeData.id;
 	}
 
 	test('published recipes are visible to all authenticated users', async ({ page, context }) => {

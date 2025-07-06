@@ -162,17 +162,26 @@
     
     try {
       if (mode === 'create') {
+        console.log('Creating recipe with data:', recipeData);
         const newRecipe = await recipesStore.createRecipe(recipeData);
-        goto(`/recipes/${newRecipe.id}`);
+        console.log('Recipe created successfully:', newRecipe);
+        console.log('Redirecting to:', `/recipes/${newRecipe.id}`);
+        await goto(`/recipes/${newRecipe.id}`);
+        console.log('Redirect completed');
       } else if (recipe) {
+        console.log('Updating recipe with data:', recipeData);
         const updatedRecipe = await recipesStore.updateRecipe({
           id: recipe.id,
           ...recipeData
         });
-        goto(`/recipes/${updatedRecipe.id}`);
+        console.log('Recipe updated successfully:', updatedRecipe);
+        console.log('Redirecting to:', `/recipes/${updatedRecipe.id}`);
+        await goto(`/recipes/${updatedRecipe.id}`);
+        console.log('Redirect completed');
       }
     } catch (error) {
       console.error('Failed to save recipe:', error);
+      // Don't rethrow the error to prevent form from breaking
     }
   }
   
