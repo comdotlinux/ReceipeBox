@@ -5,6 +5,11 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
+	server: {
+		watch: {
+			ignored: ['**/pocketbase/**', '**/pb_data/**', '**/*.db', '**/*.db-*']
+		}
+	},
 	test: {
 		coverage: {
 			provider: 'v8',

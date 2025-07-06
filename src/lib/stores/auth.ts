@@ -25,8 +25,16 @@ class AuthStore {
     }
 
     // Listen for auth changes
+    let isUpdating = false;
     pb.client.authStore.onChange((token, model) => {
-      user.set(model as User | null);
+      if (!isUpdating) {
+        isUpdating = true;
+        user.set(model as User | null);
+        // Use setTimeout to break the synchronous update cycle
+        setTimeout(() => {
+          isUpdating = false;
+        }, 0);
+      }
     });
   }
 

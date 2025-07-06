@@ -52,7 +52,6 @@ export class RecipeService {
 
       const result = await pb.client.collection('recipes').getList(page, limit, {
         filter: finalFilter,
-        sort: '-updated',
         expand: 'created_by,last_modified_by'
       });
 

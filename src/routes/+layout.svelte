@@ -2,14 +2,17 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { authStore, appStore, currentRoute } from '$lib/stores';
+	import { authStore, appStore, currentRoute, user } from '$lib/stores';
 	import Header from '$lib/components/layout/Header.svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
 		// Initialize authentication
-		authStore.refreshAuth();
+		// Only refresh if not already authenticated
+		if (!$user) {
+			authStore.refreshAuth();
+		}
 		
 		// Initialize app store (themes, PWA features, etc.)
 		// This is automatically handled by the AppStore constructor
