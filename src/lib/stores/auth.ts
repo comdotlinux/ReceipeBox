@@ -134,6 +134,63 @@ class AuthStore {
     }
   }
 
+  async promoteToAdmin(userId: string): Promise<void> {
+    try {
+      authLoading.set(true);
+      authError.set(null);
+      
+      const updatedUser = await pb.promoteToAdmin(userId);
+      
+      // Update the current user if it's the same user
+      if (pb.currentUser?.id === userId) {
+        user.set(updatedUser);
+      }
+    } catch (error) {
+      authError.set(error instanceof Error ? error.message : 'Failed to promote user to admin');
+      throw error;
+    } finally {
+      authLoading.set(false);
+    }
+  }
+
+  async demoteFromAdmin(userId: string): Promise<void> {
+    try {
+      authLoading.set(true);
+      authError.set(null);
+      
+      const updatedUser = await pb.demoteFromAdmin(userId);
+      
+      // Update the current user if it's the same user
+      if (pb.currentUser?.id === userId) {
+        user.set(updatedUser);
+      }
+    } catch (error) {
+      authError.set(error instanceof Error ? error.message : 'Failed to demote user from admin');
+      throw error;
+    } finally {
+      authLoading.set(false);
+    }
+  }
+
+  async updateUserRole(userId: string, role: 'admin' | 'reader'): Promise<void> {
+    try {
+      authLoading.set(true);
+      authError.set(null);
+      
+      const updatedUser = await pb.updateUserRole(userId, role);
+      
+      // Update the current user if it's the same user
+      if (pb.currentUser?.id === userId) {
+        user.set(updatedUser);
+      }
+    } catch (error) {
+      authError.set(error instanceof Error ? error.message : 'Failed to update user role');
+      throw error;
+    } finally {
+      authLoading.set(false);
+    }
+  }
+
   clearError(): void {
     authError.set(null);
   }

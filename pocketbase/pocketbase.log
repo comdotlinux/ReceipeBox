@@ -1,0 +1,83 @@
+[0.00ms] CREATE TABLE IF NOT EXISTS `_migrations` (file VARCHAR(255) PRIMARY KEY NOT NULL, applied INTEGER NOT NULL)
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1640988000_aux_init.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1640988000_init.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233556_v0.23_migrate.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233557_v0.23_migrate2.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233558_v0.23_migrate3.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233559_v0.23_migrate4.go' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` ORDER BY `created` ASC
+[0.00ms] SELECT `_params`.* FROM `_params` WHERE `id`='settings'
+[0.00ms] SELECT `_collections`.* FROM `_collections` ORDER BY `created` ASC
+[0.00ms] CREATE TABLE IF NOT EXISTS `_migrations` (file VARCHAR(255) PRIMARY KEY NOT NULL, applied INTEGER NOT NULL)
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1640988000_aux_init.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1640988000_init.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233556_v0.23_migrate.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233557_v0.23_migrate2.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233558_v0.23_migrate3.go' LIMIT 1
+[0.00ms] SELECT count(*) FROM `_migrations` WHERE `file`='1717233559_v0.23_migrate4.go' LIMIT 1
+2025/07/05 10:13:20 Server started at http://127.0.0.1:8090
+├─ REST API:  http://127.0.0.1:8090/api/
+└─ Dashboard: http://127.0.0.1:8090/_/
+[0.00ms] SELECT count(*) FROM `_superusers` WHERE NOT (`email`='__pbinstaller@example.com')
+INFO GET /api/health
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+INFO POST /api/collections/_superusers/auth-refresh
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+INFO GET /api/settings
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` ORDER BY `name` ASC LIMIT 200
+INFO GET /api/collections?page=1&perPage=200&skipTotal=1&sort=+name
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+INFO GET /api/settings
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+INFO GET /api/collections/meta/scaffolds
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `users`.* FROM `users` LIMIT 1
+[1.00ms] SELECT COUNT(DISTINCT `users`.`id`) FROM `users`
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=1&filter=&fields=id
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `users`.* FROM `users` ORDER BY `users`.`_rowid_` DESC LIMIT 40
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=40&sort=-@rowid&skipTotal=1&filter=&expand=&fields=
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_' OR LOWER(`name`)='_pb_users_auth_' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_' OR LOWER(`name`)='_pb_users_auth_' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_'
+[0.00ms] SELECT count(*) FROM `_collections` WHERE (LOWER(`name`)='users') AND (`id`<>'_pb_users_auth_') LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='users'
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_' OR LOWER(`name`)='_pb_users_auth_' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_' OR LOWER(`name`)='_pb_users_auth_' LIMIT 1
+[0.00ms] SELECT `tbl_name` FROM `sqlite_master` WHERE (((`type`='index') AND (LOWER(`tbl_name`)!=LOWER('users'))) AND (LOWER(`tbl_name`)!=LOWER('users'))) AND (LOWER(`name`)=LOWER('idx_tokenKey__pb_users_auth_')) LIMIT 1
+[0.00ms] SELECT `tbl_name` FROM `sqlite_master` WHERE (((`type`='index') AND (LOWER(`tbl_name`)!=LOWER('users'))) AND (LOWER(`tbl_name`)!=LOWER('users'))) AND (LOWER(`name`)=LOWER('idx_email__pb_users_auth_')) LIMIT 1
+[0.00ms] UPDATE `_collections` SET `createRule`=0xc00012de20, `created`='2025-07-04 21:35:54.057Z', `deleteRule`=0xc00012de40, `fields`='[{"autogeneratePattern":"[a-z0-9]{15}","hidden":false,"id":"text3208210256","max":15,"min":15,"name":"id","pattern":"^[a-z0-9]+$","presentable":false,"primaryKey":true,"required":true,"system":true,"type":"text"},{"cost":0,"hidden":true,"id":"password901924565","max":0,"min":8,"name":"password","pattern":"","presentable":false,"required":true,"system":true,"type":"password"},{"autogeneratePattern":"[a-zA-Z0-9]{50}","hidden":true,"id":"text2504183744","max":60,"min":30,"name":"tokenKey","pattern":"","presentable":false,"primaryKey":false,"required":true,"system":true,"type":"text"},{"exceptDomains":null,"hidden":false,"id":"email3885137012","name":"email","onlyDomains":null,"presentable":false,"required":true,"system":true,"type":"email"},{"hidden":false,"id":"bool1547992806","name":"emailVisibility","presentable":false,"required":false,"system":true,"type":"bool"},{"hidden":false,"id":"bool256245529","name":"verified","presentable":false,"required":false,"system":true,"type":"bool"},{"autogeneratePattern":"","hidden":false,"id":"text1579384326","max":255,"min":0,"name":"name","pattern":"","presentable":false,"primaryKey":false,"required":false,"system":false,"type":"text"},{"hidden":false,"id":"file376926767","maxSelect":1,"maxSize":0,"mimeTypes":["image/jpeg","image/png","image/svg+xml","image/gif","image/webp"],"name":"avatar","presentable":false,"protected":false,"required":false,"system":false,"thumbs":null,"type":"file"},{"hidden":false,"id":"select1466534506","maxSelect":1,"name":"role","presentable":false,"required":true,"system":false,"type":"select","values":["admin","reader"]},{"hidden":false,"id":"autodate2990389176","name":"created","onCreate":true,"onUpdate":false,"presentable":false,"system":false,"type":"autodate"},{"hidden":false,"id":"autodate3332085495","name":"updated","onCreate":true,"onUpdate":true,"presentable":false,"system":false,"type":"autodate"}]', `id`='_pb_users_auth_', `indexes`='["CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)","CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''''"]', `listRule`=0xc00012de00, `name`='users', `options`='{"authRule":"","manageRule":null,"authAlert":{"enabled":true,"emailTemplate":{"subject":"Login from a new location","body":"\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eWe noticed a login to your {APP_NAME} account from a new location.\u003c/p\u003e\n\u003cp\u003eIf this was you, you may disregard this email.\u003c/p\u003e\n\u003cp\u003e\u003cstrong\u003eIf this wasn''t you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.\u003c/strong\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e"`,"oauth2":{"providers":[],"mappedFields":{"id":"","name":"name","username":"","avatarURL":"avatar"},"enabled":false},"passwordAuth":{"enabled":true,"identityFields":["email"]},"mfa":{"enabled":false,"duration":1800,"rule":""},"otp":{"enabled":false,"duration":180,"length":8,"emailTemplate":{"subject":"OTP for {APP_NAME}","body":"\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eYour one-time password is: \u003cstrong\u003e{OTP}\u003c/strong\u003e\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn''t ask for the one-time password, you can ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e"`,"authToken":{"secret":"95VVLzW7Z82ysWnB1n8iJHvUEcXhlHQiDqwL1hlXs028qSuYvx","duration":604800},"passwordResetToken":{"secret":"WcviVjsMulHSCOpKWSmIosROS5nNIxxUPOP9D3jZwpuRJ3wxaB","duration":1800},"emailChangeToken":{"secret":"1sySNqrlcS0bq7p3MVoII6OzvAA3NOV3bxfuLJHtD5COr7zIK4","duration":1800},"verificationToken":{"secret":"PjZjgAWuhEJhRy1hmQeYFRDUMdyRfTBBBmDqaZP55aYozIFQYV","duration":259200},"fileToken":{"secret":"hxKE3IxCIpC1uYDgH4t1XIRRlEBMtwRcQG0wQnLHtGLuBIIrs4","duration":180},"verificationTemplate":{"subject":"Verify your {APP_NAME} email","body":"\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eThank you for joining us at {APP_NAME}.\u003c/p\u003e\n\u003cp\u003eClick on the button below to verify your email address.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eVerify\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e"},"resetPasswordTemplate":{"subject":"Reset your {APP_NAME} password","body":"\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eClick on the button below to reset your password.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eReset password\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn''t ask to reset your password, you can ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e"},"confirmEmailChangeTemplate":{"subject":"Confirm your {APP_NAME} new email address","body":"\u003cp\u003eHello,\u003c/p\u003e\n\u003cp\u003eClick on the button below to confirm your new email address.\u003c/p\u003e\n\u003cp\u003e\n  \u003ca class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\"\u003eConfirm new email\u003c/a\u003e\n\u003c/p\u003e\n\u003cp\u003e\u003ci\u003eIf you didn''t ask to change your email address, you can ignore this email.\u003c/i\u003e\u003c/p\u003e\n\u003cp\u003e\n  Thanks,\u003cbr/\u003e\n  {APP_NAME} team\n\u003c/p\u003e"`', `system`=false, `type`='auth', `updateRule`=0xc00012de30, `updated`='2025-07-05 08:15:03.495Z', `viewRule`=0xc00012de10 WHERE `id`='_pb_users_auth_'
+[0.00ms] SELECT (1) FROM `sqlite_schema` WHERE (`type` IN ('table', 'view')) AND (LOWER(`name`)=LOWER('users')) LIMIT 1
+[0.00ms] DROP INDEX IF EXISTS `idx_tokenKey__pb_users_auth_`
+[0.00ms] DROP INDEX IF EXISTS `idx_email__pb_users_auth_`
+[0.00ms] ALTER TABLE `users` ADD `roleKyx3w` TEXT DEFAULT '' NOT NULL
+[2.00ms] ALTER TABLE `users` RENAME COLUMN `roleKyx3w` TO `role`
+[0.00ms] CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)
+[0.00ms] CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''
+[0.00ms] PRAGMA optimize
+[1.00ms] SELECT `_collections`.* FROM `_collections` WHERE `type`='view' ORDER BY `created` ASC
+[0.00ms] SELECT `_collections`.* FROM `_collections` ORDER BY `created` ASC
+[0.00ms] SELECT `_collections`.* FROM `_collections` WHERE `id`='_pb_users_auth_' OR LOWER(`name`)='_pb_users_auth_' LIMIT 1
+[0.00ms] INSERT INTO `_migrations` (`applied`, `file`) VALUES (1751703303529325, '1751703303_updated_users.js')
+INFO PATCH /api/collections/_pb_users_auth_
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `_collections`.* FROM `_collections` ORDER BY `name` ASC LIMIT 200
+INFO GET /api/collections?page=1&perPage=200&skipTotal=1&sort=+name
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+INFO GET /api/collections/meta/scaffolds
+[0.00ms] SELECT `users`.* FROM `users` LIMIT 1
+[1.00ms] SELECT COUNT(DISTINCT `users`.`id`) FROM `users`
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=1&filter=&fields=id
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `users`.* FROM `users` LIMIT 1
+[0.00ms] SELECT COUNT(DISTINCT `users`.`id`) FROM `users`
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=1&filter=&fields=id
+[1.00ms] SELECT `users`.* FROM `users` ORDER BY `users`.`_rowid_` DESC LIMIT 40
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=40&sort=-@rowid&skipTotal=1&filter=&expand=&fields=
+[0.00ms] SELECT `_superusers`.* FROM `_superusers` WHERE `_superusers`.`id`='roq4199yfcop5u2' LIMIT 1
+[0.00ms] SELECT `users`.* FROM `users` ORDER BY `users`.`_rowid_` DESC LIMIT 40
+INFO GET /api/collections/_pb_users_auth_/records?page=1&perPage=40&sort=-@rowid&skipTotal=1&filter=&expand=&fields=

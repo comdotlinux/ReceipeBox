@@ -168,6 +168,40 @@ class PocketBaseService {
     }
   }
 
+  // User management methods
+  public async promoteToAdmin(userId: string): Promise<User> {
+    try {
+      const updatedUser = await this.pb.collection('users').update(userId, {
+        role: 'admin'
+      });
+      return updatedUser as User;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  public async demoteFromAdmin(userId: string): Promise<User> {
+    try {
+      const updatedUser = await this.pb.collection('users').update(userId, {
+        role: 'reader'
+      });
+      return updatedUser as User;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  public async updateUserRole(userId: string, role: 'admin' | 'reader'): Promise<User> {
+    try {
+      const updatedUser = await this.pb.collection('users').update(userId, {
+        role: role
+      });
+      return updatedUser as User;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Utility methods
   public getFileUrl(record: any, filename: string): string {
     return this.pb.files.getUrl(record, filename);
