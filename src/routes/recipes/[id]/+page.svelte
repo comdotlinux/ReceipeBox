@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { recipesStore, isAdmin, pb } from '$lib/stores';
+  import { recipesStore, currentRecipe, isAdmin, pb } from '$lib/stores';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import type { Recipe } from '$lib/types';
@@ -18,7 +18,11 @@
     }
 
     try {
-      recipe = await recipesStore.getRecipe(recipeId);
+      await recipesStore.loadRecipe(recipeId);
+      
+      // Set the recipe directly from the store
+      recipe = $currentRecipe;
+      
       if (!recipe) {
         error = 'Recipe not found';
       }
@@ -28,6 +32,13 @@
     } finally {
       loading = false;
     }
+
+    // Also subscribe for any updates
+    const unsubscribe = currentRecipe.subscribe(value => {
+      recipe = value;
+    });
+    
+    return unsubscribe;
   });
 
   function getImageUrl() {

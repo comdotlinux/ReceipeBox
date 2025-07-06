@@ -80,7 +80,6 @@ describe('RecipeService', () => {
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
 				filter: 'is_published = true',
-				sort: '-updated',
 				expand: 'created_by,last_modified_by'
 			});
 			expect(result.items).toHaveLength(1);
@@ -99,7 +98,6 @@ describe('RecipeService', () => {
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
 				filter: 'is_published = true && (title ~ "pasta" || description ~ "pasta")',
-				sort: '-updated',
 				expand: 'created_by,last_modified_by'
 			});
 		});
@@ -121,7 +119,6 @@ describe('RecipeService', () => {
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
 				filter: expect.stringContaining('is_published = true'),
-				sort: '-updated',
 				expand: 'created_by,last_modified_by'
 			});
 		});

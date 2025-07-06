@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import RecipeForm from '$lib/components/recipe/RecipeForm.svelte';
-  import { isAuthenticated, isAdmin, recipesStore } from '$lib/stores';
+  import { isAuthenticated, isAdmin, recipesStore, currentRecipe } from '$lib/stores';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
@@ -23,7 +23,8 @@
     }
 
     try {
-      recipe = await recipesStore.getRecipe(recipeId);
+      await recipesStore.loadRecipe(recipeId);
+      recipe = $currentRecipe;
       if (!recipe) {
         error = 'Recipe not found';
       }

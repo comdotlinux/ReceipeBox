@@ -22,17 +22,20 @@ test.describe('Recipe Visibility Based on Published Status', () => {
 		guestPage = await guestContext.newPage();
 		
 		// Login admin
-		await adminPage.goto('/login');
-		await adminPage.fill('input[name="email"]', testUsers.admin.email);
-		await adminPage.fill('input[name="password"]', testUsers.admin.password);
+		await adminPage.goto('/auth/login');
+		await adminPage.fill('input#email', 'a@b.c');
+		await adminPage.fill('input#password', 'abcabcabc');
 		await adminPage.click('button[type="submit"]');
 		await adminPage.waitForURL('/');
 		
-		// Login reader
-		await readerPage.goto('/login');
-		await readerPage.fill('input[name="email"]', testUsers.reader.email);
-		await readerPage.fill('input[name="password"]', testUsers.reader.password);
-		await readerPage.click('button[type="submit"]');
+		// Create and login reader
+		await readerPage.goto('/auth/register');
+		const readerEmail = `reader-${Date.now()}@test.com`;
+		await readerPage.getByTestId('name-input').fill('Test Reader');
+		await readerPage.getByTestId('register-email-input').fill(readerEmail);
+		await readerPage.getByTestId('register-password-input').fill('readerpass123');
+		await readerPage.getByTestId('confirm-password-input').fill('readerpass123');
+		await readerPage.getByTestId('register-button').click();
 		await readerPage.waitForURL('/');
 		
 		// Create test recipes
