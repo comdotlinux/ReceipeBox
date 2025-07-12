@@ -123,9 +123,6 @@ test.describe('Recipe CRUD Operations', () => {
 		await page.fill('input[placeholder="Unit"]', 'cup');
 		await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Original instruction');
 		
-		// Debug: Take screenshot before clicking
-		await page.screenshot({ path: 'debug-before-create.png' });
-		
 		// Listen for network requests
 		const responsePromise = page.waitForResponse(response => 
 			response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
@@ -133,23 +130,16 @@ test.describe('Recipe CRUD Operations', () => {
 		
 		await page.click('button:has-text("Create Recipe")');
 		
-		// Debug: Wait and see what happens
-		console.log('Clicked Create Recipe button, current URL:', page.url());
-		
 		// Wait for the API response
 		let recipeId;
 		try {
 			const response = await responsePromise;
-			console.log('Recipe creation response status:', response.status());
 			const responseBody = await response.text();
-			console.log('Recipe creation response:', responseBody);
 			
 			// Parse the response to get the recipe ID
 			const recipeData = JSON.parse(responseBody);
 			recipeId = recipeData.id;
-			console.log('Recipe created with ID:', recipeId);
 		} catch (error) {
-			console.log('No recipe creation API call was made or it failed:', error);
 			throw error;
 		}
 		
@@ -170,15 +160,6 @@ test.describe('Recipe CRUD Operations', () => {
 		
 		// Wait for loading to finish
 		await page.waitForFunction(() => !document.querySelector('.animate-spin'), { timeout: 10000 });
-		
-		// Take a screenshot to debug what's showing
-		await page.screenshot({ path: 'debug-edit-page.png' });
-		
-		// Debug: Check what's actually on the page
-		const pageContent = await page.content();
-		console.log('Page title:', await page.title());
-		console.log('URL:', page.url());
-		console.log('Body text:', await page.locator('body').textContent());
 		
 		// Wait for the edit form to load (recipe data needs to be fetched first)
 		await page.waitForSelector('input[placeholder="Enter recipe title"]', { timeout: 10000 });

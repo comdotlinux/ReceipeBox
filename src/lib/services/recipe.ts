@@ -23,8 +23,11 @@ export class RecipeService {
     try {
       const { page = 1, limit = 20, query, tags, cuisine, difficulty, dietary } = params;
       
-      let filter = 'is_published = true';
-      const filterParts: string[] = [filter];
+      // Only filter by published status for non-admin users
+      const filterParts: string[] = [];
+      if (pb.currentUser?.role !== 'admin') {
+        filterParts.push('is_published = true');
+      }
 
       if (query) {
         filterParts.push(`(title ~ "${query}" || description ~ "${query}")`);
@@ -70,9 +73,14 @@ export class RecipeService {
   async getRecipe(id: string): Promise<Recipe> {
     try {
       const result = await pb.client.collection('recipes').getOne(id, {
-        expand: 'created_by,last_modified_by',
-        filter: `id = "${id}" && is_published = true`
+        expand: 'created_by,last_modified_by'
       });
+      
+      // Check if recipe is published for non-admin users
+      if (pb.currentUser?.role !== 'admin' && !result.is_published) {
+        throw new Error('Recipe not found');
+      }
+      
       return result as Recipe;
     } catch (error) {
       throw new Error(`Failed to fetch recipe: ${error}`);

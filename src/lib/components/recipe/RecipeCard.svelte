@@ -33,10 +33,17 @@
     
     <!-- Recipe Content -->
     <div class="p-4">
-      <!-- Title -->
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-        {recipe.title}
-      </h3>
+      <!-- Title and Draft Indicator -->
+      <div class="flex items-start justify-between mb-2">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 flex-1">
+          {recipe.title}
+        </h3>
+        {#if !recipe.is_published && $isAdmin}
+          <span class="ml-2 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+            Draft
+          </span>
+        {/if}
+      </div>
       
       <!-- Description -->
       {#if recipe.description && !compact}

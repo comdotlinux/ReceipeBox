@@ -33,6 +33,9 @@
   let tagInput = $state('');
   let tags = $state<string[]>(recipe?.tags || []);
   
+  // Publishing
+  let isPublished = $state(recipe?.is_published ?? true);
+  
   // Validation
   let errors = $state<Record<string, string>>({});
   
@@ -157,7 +160,7 @@
         type: 'manual',
         extractedBy: 'manual'
       },
-      is_published: true
+      is_published: isPublished
     };
     
     try {
@@ -533,6 +536,29 @@
           </div>
         {/if}
       </div>
+    </div>
+    
+    <!-- Publishing Options -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Publishing</h3>
+      
+      <div class="flex items-center">
+        <input
+          type="checkbox"
+          id="is-published"
+          bind:checked={isPublished}
+          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        />
+        <label for="is-published" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+          Publish this recipe (make it visible to all users)
+        </label>
+      </div>
+      
+      {#if !isPublished}
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          This recipe will be saved as a draft and only visible to administrators.
+        </p>
+      {/if}
     </div>
     
     <!-- Form Actions -->

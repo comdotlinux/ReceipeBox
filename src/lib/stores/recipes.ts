@@ -52,6 +52,7 @@ class RecipesStore {
       currentRecipe.set(recipe);
     } catch (error) {
       recipesError.set(error instanceof Error ? error.message : 'Failed to load recipe');
+      throw error; // Re-throw to allow page component to handle
     } finally {
       recipesLoading.set(false);
     }

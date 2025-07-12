@@ -79,7 +79,7 @@ describe('RecipeService', () => {
 			const result = await recipeService.getRecipes();
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
-				filter: 'is_published = true',
+				filter: '',
 				expand: 'created_by,last_modified_by'
 			});
 			expect(result.items).toHaveLength(1);
@@ -97,7 +97,7 @@ describe('RecipeService', () => {
 			await recipeService.getRecipes({ query: 'pasta' });
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
-				filter: 'is_published = true && (title ~ "pasta" || description ~ "pasta")',
+				filter: '(title ~ "pasta" || description ~ "pasta")',
 				expand: 'created_by,last_modified_by'
 			});
 		});
@@ -118,7 +118,7 @@ describe('RecipeService', () => {
 			});
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
-				filter: expect.stringContaining('is_published = true'),
+				filter: '(title ~ "pasta" || description ~ "pasta") && (tags ~ "italian" && tags ~ "quick") && metadata.difficulty = "easy"',
 				expand: 'created_by,last_modified_by'
 			});
 		});

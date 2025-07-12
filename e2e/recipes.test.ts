@@ -46,7 +46,20 @@ test.describe('Recipe Management', () => {
   });
 
   test('recipe detail page handles invalid IDs gracefully', async ({ page }) => {
+    // Login first as a reader
+    await page.goto('/auth/register');
+    const timestamp = Date.now();
+    await page.getByTestId('name-input').fill(`Test User ${timestamp}`);
+    await page.getByTestId('register-email-input').fill(`test${timestamp}@example.com`);
+    await page.getByTestId('register-password-input').fill('TestPass123!');
+    await page.getByTestId('confirm-password-input').fill('TestPass123!');
+    await page.getByTestId('register-button').click();
+    await page.waitForURL('/');
+    
     await page.goto('/recipes/nonexistent-id');
+    
+    // Wait for page to load
+    await page.waitForLoadState('networkidle');
     
     // Should show error message
     await expect(page.getByText('Error')).toBeVisible();
@@ -258,8 +271,21 @@ test.describe('Admin Functionality', () => {
 
 test.describe('Error Handling', () => {
   test('handles network errors gracefully', async ({ page }) => {
+    // Login first as a reader
+    await page.goto('/auth/register');
+    const timestamp = Date.now();
+    await page.getByTestId('name-input').fill(`Test User ${timestamp}`);
+    await page.getByTestId('register-email-input').fill(`test${timestamp}@example.com`);
+    await page.getByTestId('register-password-input').fill('TestPass123!');
+    await page.getByTestId('confirm-password-input').fill('TestPass123!');
+    await page.getByTestId('register-button').click();
+    await page.waitForURL('/');
+    
     // Test with a 404 recipe
     await page.goto('/recipes/definitely-does-not-exist');
+    
+    // Wait for page to load
+    await page.waitForLoadState('networkidle');
     
     // Should show error state
     await expect(page.getByText('Error')).toBeVisible();
