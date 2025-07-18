@@ -22,12 +22,8 @@ describe('RecipeService', () => {
 		id: 'test123',
 		title: 'Test Recipe',
 		description: 'A test recipe description',
-		ingredients: [
-			{ amount: '2', unit: 'cups', item: 'flour', notes: '' }
-		],
-		instructions: [
-			{ step: 1, instruction: 'Mix ingredients', timeInMinutes: 5 }
-		],
+		ingredients: [{ amount: '2', unit: 'cups', item: 'flour', notes: '' }],
+		instructions: [{ step: 1, instruction: 'Mix ingredients', timeInMinutes: 5 }],
 		tags: ['test', 'recipe'],
 		metadata: {
 			prepTimeMinutes: 10,
@@ -52,7 +48,7 @@ describe('RecipeService', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		
+
 		mockCollection = {
 			getList: vi.fn(),
 			getOne: vi.fn(),
@@ -111,14 +107,15 @@ describe('RecipeService', () => {
 				perPage: 20
 			});
 
-			await recipeService.getRecipes({ 
+			await recipeService.getRecipes({
 				query: 'pasta',
 				tags: ['italian', 'quick'],
 				difficulty: 'easy'
 			});
 
 			expect(mockCollection.getList).toHaveBeenCalledWith(1, 20, {
-				filter: '(title ~ "pasta" || description ~ "pasta") && (tags ~ "italian" && tags ~ "quick") && metadata.difficulty = "easy"',
+				filter:
+					'(title ~ "pasta" || description ~ "pasta") && (tags ~ "italian" && tags ~ "quick") && metadata.difficulty = "easy"',
 				expand: 'created_by,last_modified_by'
 			});
 		});
@@ -155,7 +152,7 @@ describe('RecipeService', () => {
 				source: mockRecipe.source,
 				is_published: true
 			};
-			
+
 			mockCollection.create.mockResolvedValue(mockRecipe);
 
 			const result = await recipeService.createRecipe(newRecipe);
@@ -175,7 +172,9 @@ describe('RecipeService', () => {
 				source: {} as any
 			};
 
-			await expect(recipeService.createRecipe(newRecipe)).rejects.toThrow('Only administrators can create recipes');
+			await expect(recipeService.createRecipe(newRecipe)).rejects.toThrow(
+				'Only administrators can create recipes'
+			);
 		});
 
 		it('should throw error when not authenticated', async () => {
@@ -189,15 +188,17 @@ describe('RecipeService', () => {
 				source: {} as any
 			};
 
-			await expect(recipeService.createRecipe(newRecipe)).rejects.toThrow('Must be authenticated to create recipes');
+			await expect(recipeService.createRecipe(newRecipe)).rejects.toThrow(
+				'Must be authenticated to create recipes'
+			);
 		});
 	});
 
 	describe('updateRecipe', () => {
 		it('should update an existing recipe for admin users', async () => {
-			const updates: RecipeUpdateData = { 
+			const updates: RecipeUpdateData = {
 				id: 'test123',
-				title: 'Updated Recipe' 
+				title: 'Updated Recipe'
 			};
 			mockCollection.update.mockResolvedValue({ ...mockRecipe, ...updates });
 
@@ -210,7 +211,9 @@ describe('RecipeService', () => {
 		it('should throw error when non-admin tries to update recipe', async () => {
 			pb.currentUser = { id: 'user123', role: 'reader' } as any;
 
-			await expect(recipeService.updateRecipe({ id: 'test123' })).rejects.toThrow('Only administrators can update recipes');
+			await expect(recipeService.updateRecipe({ id: 'test123' })).rejects.toThrow(
+				'Only administrators can update recipes'
+			);
 		});
 	});
 
@@ -226,7 +229,9 @@ describe('RecipeService', () => {
 		it('should throw error when non-admin tries to delete recipe', async () => {
 			pb.currentUser = { id: 'user123', role: 'reader' } as any;
 
-			await expect(recipeService.deleteRecipe('test123')).rejects.toThrow('Only administrators can delete recipes');
+			await expect(recipeService.deleteRecipe('test123')).rejects.toThrow(
+				'Only administrators can delete recipes'
+			);
 		});
 	});
 
@@ -255,26 +260,33 @@ describe('RecipeService', () => {
 		it('should extract recipe from URL for admin users', async () => {
 			const mockResponse = {
 				success: true,
-				recipe: mockRecipe
+				data: mockRecipe
 			};
-			vi.mocked(pb.client.send).mockResolvedValue(mockResponse);
+
+			// Mock fetch API
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve(mockResponse)
+			});
 
 			const result = await recipeService.extractRecipeFromUrl('https://example.com/recipe');
 
-			expect(pb.client.send).toHaveBeenCalledWith('/api/extract-recipe-url', {
+			expect(fetch).toHaveBeenCalledWith('/api/recipes/extract-url', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
+					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({ url: 'https://example.com/recipe' })
 			});
-			expect(result).toEqual(mockResponse);
+			expect(result).toEqual(mockRecipe);
 		});
 
 		it('should throw error when non-admin tries to extract recipe', async () => {
 			pb.currentUser = { id: 'user123', role: 'reader' } as any;
 
-			await expect(recipeService.extractRecipeFromUrl('https://example.com')).rejects.toThrow('Only administrators can extract recipes');
+			await expect(recipeService.extractRecipeFromUrl('https://example.com')).rejects.toThrow(
+				'Only administrators can extract recipes'
+			);
 		});
 	});
 
@@ -283,17 +295,22 @@ describe('RecipeService', () => {
 			const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
 			const mockResponse = {
 				success: true,
-				recipe: mockRecipe
+				data: mockRecipe
 			};
-			vi.mocked(pb.client.send).mockResolvedValue(mockResponse);
+
+			// Mock fetch API
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve(mockResponse)
+			});
 
 			const result = await recipeService.extractRecipeFromImage(mockFile);
 
-			expect(pb.client.send).toHaveBeenCalledWith('/api/extract-recipe-image', {
+			expect(fetch).toHaveBeenCalledWith('/api/recipes/extract-image', {
 				method: 'POST',
 				body: expect.any(FormData)
 			});
-			expect(result).toEqual(mockResponse);
+			expect(result).toEqual(mockRecipe);
 		});
 	});
 });
