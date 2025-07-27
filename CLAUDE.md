@@ -204,6 +204,51 @@ RecipeVault is a Progressive Web Application that enables users to collect, orga
 
 ## Deployment Guide (Archived from DEPLOYMENT.md)
 
+### Local Development Setup
+
+#### Running PocketBase Locally
+
+```bash
+# Download PocketBase (if not already installed)
+# Visit https://pocketbase.io/docs/ for latest version
+
+# Start PocketBase server
+cd pocketbase/
+./pocketbase serve
+
+# PocketBase will be available at:
+# - API: http://localhost:8090/api/
+# - Admin UI: http://localhost:8090/_/
+```
+
+#### Environment Variables Setup
+
+Create `.env` file in project root:
+
+```bash
+# Required Environment Variables
+VITE_POCKETBASE_URL=http://localhost:8090
+VITE_GEMINI_API_KEY=your-gemini-api-key-here
+
+# Optional - for OAuth providers
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+VITE_GITHUB_CLIENT_ID=your-github-client-id
+```
+
+#### Development Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Start development with PocketBase
+npm run dev:full
+
+# Or run separately:
+npm run pocketbase  # Terminal 1 - starts PocketBase
+npm run dev         # Terminal 2 - starts SvelteKit dev server
+```
+
 ### Production Architecture Overview
 
 - **Frontend**: SvelteKit app container (port 3000)
@@ -219,13 +264,139 @@ RecipeVault is a Progressive Web Application that enables users to collect, orga
 - Server with at least 2GB RAM and 10GB storage
 - External reverse proxy/load balancer (Cloudflare, AWS ALB, etc.)
 
+### Production Environment Setup
+
+Create `.env.production` file:
+
+```bash
+# Application Configuration
+NODE_ENV=production
+VITE_POCKETBASE_URL=http://localhost:8090/api
+VITE_GEMINI_API_KEY=your-gemini-api-key-here
+
+# PocketBase Configuration
+PB_ADMIN_EMAIL=admin@your-domain.com
+PB_ADMIN_PASSWORD=your-secure-admin-password
+PB_ENCRYPTION_KEY=your-32-character-encryption-key
+
+# Port Configuration
+FRONTEND_PORT=3000
+POCKETBASE_PORT=8090
+```
+
+### Docker Deployment
+
+#### Using Docker Compose
+
+```bash
+# Navigate to docker directory
+cd docker/
+
+# Build and start services
+docker-compose up --build -d
+
+# Check service status
+docker-compose ps
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+#### Manual Docker Commands
+
+```bash
+# Build frontend image
+docker build -f docker/Dockerfile.frontend -t myrecipebox-frontend .
+
+# Run PocketBase container
+docker run -d \
+  --name myrecipebox-pocketbase \
+  -p 8090:8090 \
+  -v pocketbase_data:/pb_data \
+  ghcr.io/muchobien/pocketbase:latest
+
+# Run frontend container
+docker run -d \
+  --name myrecipebox-frontend \
+  -p 3000:3000 \
+  --link myrecipebox-pocketbase \
+  myrecipebox-frontend
+```
+
 ### Key Deployment Files
 
-- `docker-compose.prod.yml` - Production Docker Compose configuration
-- `Dockerfile.frontend` - Frontend container build configuration
+- `docker/docker-compose.yml` - Production Docker Compose configuration
+- `docker/Dockerfile.frontend` - Frontend container build configuration
 - `scripts/migrate.sh` - Database migration script
 - `scripts/backup.sh` - Automated backup script
 - `scripts/restore.sh` - Backup restoration script
+
+### Initial Setup Steps
+
+1. **Prepare Environment**
+   ```bash
+   mkdir -p /opt/myrecipebox
+   cd /opt/myrecipebox
+   git clone https://github.com/comdotlinux/ReceipeBox.git .
+   ```
+
+2. **Configure Environment**
+   ```bash
+   cp .env.example .env.production
+   # Edit .env.production with your settings
+   ```
+
+3. **Deploy with Docker**
+   ```bash
+   cd docker/
+   docker-compose up --build -d
+   ```
+
+4. **Verify Deployment**
+   ```bash
+   curl -f http://localhost:3000/health
+   curl -f http://localhost:8090/api/health
+   ```
+
+### Backup and Restore
+
+#### Create Backup
+```bash
+./scripts/backup.sh
+```
+
+#### Restore from Backup
+```bash
+./scripts/restore.sh YYYYMMDD_HHMMSS
+```
+
+### Health Monitoring
+
+The application includes health check endpoints:
+- Frontend: `http://localhost:3000/health`
+- PocketBase: `http://localhost:8090/api/health`
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **PocketBase won't start**
+   - Check port 8090 is available
+   - Verify volume permissions
+   - Check logs: `docker-compose logs pocketbase`
+
+2. **Frontend can't connect to PocketBase**
+   - Verify VITE_POCKETBASE_URL in environment
+   - Check network connectivity between containers
+   - Ensure PocketBase is healthy before frontend starts
+
+3. **Environment variables not loading**
+   - Verify .env file location and syntax
+   - Check Docker container environment configuration
+   - Restart containers after environment changes
 
 ---
 
