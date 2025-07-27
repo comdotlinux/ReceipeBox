@@ -2,6 +2,8 @@
 	import { user, isAuthenticated, isAdmin, authStore, appStore, theme, isDarkMode } from '$lib/stores';
 	import { goto } from '$app/navigation';
 
+	let dropdownOpen = false;
+
 	async function handleLogout() {
 		await authStore.logout();
 		goto('/');
@@ -9,6 +11,24 @@
 
 	function toggleSidebar() {
 		appStore.toggleSidebar();
+	}
+
+	function toggleDropdown() {
+		dropdownOpen = !dropdownOpen;
+	}
+
+	function closeDropdown() {
+		dropdownOpen = false;
+	}
+
+	// Close dropdown when clicking outside
+	function handleClickOutside(event: MouseEvent) {
+		if (dropdownOpen && event.target instanceof Element) {
+			const dropdown = event.target.closest('[data-testid="user-menu"]');
+			if (!dropdown) {
+				closeDropdown();
+			}
+		}
 	}
 
 	function toggleTheme() {
@@ -33,6 +53,8 @@
 		isDarkMode.set(!isDark);
 	}
 </script>
+
+<svelte:window on:click={handleClickOutside} />
 
 <header class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -176,10 +198,14 @@
 
 				<!-- User menu -->
 				{#if $isAuthenticated}
-					<div class="relative">
+					<div class="relative" data-testid="user-menu">
 						<button
+							onclick={toggleDropdown}
 							class="flex items-center space-x-2 rounded-full bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800"
 							aria-label="User menu"
+							aria-expanded={dropdownOpen}
+							aria-haspopup="true"
+							data-testid="user-menu-button"
 						>
 							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600">
 								<span class="font-medium text-white">
@@ -198,29 +224,35 @@
 							{/if}
 						</button>
 
-						<!-- Dropdown menu (you can implement this with a library like floating-ui) -->
-						<div
-							class="ring-opacity-5 absolute right-0 mt-2 hidden w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black dark:bg-gray-800"
-						>
-							<a
-								href="/profile"
-								class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+						<!-- Dropdown menu -->
+						{#if dropdownOpen}
+							<div
+								class="ring-opacity-5 absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black dark:bg-gray-800 z-50"
+								data-testid="user-dropdown"
 							>
-								Your Profile
-							</a>
-							<a
-								href="/settings"
-								class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-							>
-								Settings
-							</a>
-							<button
-								onclick={handleLogout}
-								class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-							>
-								Sign out
-							</button>
-						</div>
+								<a
+									href="/profile"
+									onclick={closeDropdown}
+									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+								>
+									Your Profile
+								</a>
+								<a
+									href="/settings"
+									onclick={closeDropdown}
+									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+								>
+									Settings
+								</a>
+								<button
+									onclick={() => { handleLogout(); closeDropdown(); }}
+									class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+									data-testid="logout-button"
+								>
+									Sign out
+								</button>
+							</div>
+						{/if}
 					</div>
 				{:else}
 					<div class="flex items-center space-x-3">
