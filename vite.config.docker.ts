@@ -1,8 +1,8 @@
-import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit()], // Simplified for production Docker builds
+	// No SvelteKit plugins for simple dev server
+	plugins: [],
 	server: {
 		watch: {
 			ignored: ['**/pocketbase/**', '**/pb_data/**', '**/*.db', '**/*.db-*']

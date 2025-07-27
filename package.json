@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:docker": "vite dev --config vite.config.docker.ts",
 		"dev:full": "./scripts/dev.sh",
 		"pocketbase": "./pocketbase/pocketbase serve --dev",
 		"pocketbase:clear": "./scripts/clear-database.sh",
