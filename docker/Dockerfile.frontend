@@ -3,17 +3,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files (including package-lock.json if available)
+# Copy package files first for better layer caching
 COPY package.json ./
 COPY package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci || npm install
 
-# Copy source code
-COPY . .
-
-# Build arguments
+# Build arguments (set before copying source for better caching)
 ARG NODE_ENV=production
 ARG VITE_POCKETBASE_URL
 ARG VITE_GEMINI_API_KEY
@@ -22,6 +19,15 @@ ARG VITE_GEMINI_API_KEY
 ENV NODE_ENV=$NODE_ENV
 ENV VITE_POCKETBASE_URL=$VITE_POCKETBASE_URL
 ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+
+# Copy config files needed for build
+COPY svelte.config.js ./
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+
+# Copy source code (this will invalidate cache when source changes)
+COPY src ./src
+COPY static ./static
 
 # Build the application
 RUN npm run build
