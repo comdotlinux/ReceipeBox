@@ -4,13 +4,14 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: myrecipebox-pocketbase
     restart: unless-stopped
-    command: serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public --migrationsDir=/pb_migrations --origins=https://recipe-box.dev-tech.me
+    command: serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public --migrationsDir=/pb_migrations --hooksDir=/pb_hooks
     ports:
       - "8090:8090"
     volumes:
       - pocketbase_data:/pb_data
       - pocketbase_public:/pb_public
       - ../pocketbase/pb_migrations:/pb_migrations:ro
+      - ../pocketbase/pb_hooks:/pb_hooks:ro
     environment:
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-admin@example.com}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-password123}
