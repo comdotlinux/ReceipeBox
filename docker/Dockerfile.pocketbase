@@ -4,11 +4,11 @@ FROM alpine:latest
 RUN apk add --no-cache wget unzip ca-certificates
 
 # Download and install PocketBase
-RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.20/pocketbase_0.22.20_linux_amd64.zip \
-    && unzip pocketbase_0.22.20_linux_amd64.zip \
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.29.0/pocketbase_0.29.0_linux_amd64.zip \
+    && unzip pocketbase_0.29.0_linux_amd64.zip \
     && chmod +x pocketbase \
     && mv pocketbase /usr/local/bin/pocketbase \
-    && rm pocketbase_0.22.20_linux_amd64.zip
+    && rm pocketbase_0.29.0_linux_amd64.zip
 
 # Create directories (run as root, no user switching for now)
 RUN mkdir -p /pb_data /pb_public /pb_migrations
