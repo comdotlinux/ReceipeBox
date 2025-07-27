@@ -43,6 +43,7 @@ services:
     environment:
       - NODE_ENV=production
       - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-http://pocketbase:8090}
+      - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS:-recipe-box.dev-tech.me}
     networks:
       - recipe_network
 

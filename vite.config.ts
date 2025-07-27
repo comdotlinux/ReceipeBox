@@ -6,6 +6,8 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	server: {
+		host: process.env.VITE_HOST || 'localhost',
+		allowedHosts: process.env.VITE_ALLOWED_HOSTS ? process.env.VITE_ALLOWED_HOSTS.split(',') : undefined,
 		watch: {
 			ignored: ['**/pocketbase/**', '**/pb_data/**', '**/*.db', '**/*.db-*']
 		}
