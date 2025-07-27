@@ -3,6 +3,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments
+ARG VITE_POCKETBASE_URL=https://pocketbase.recipe-box.dev-tech.me
+ARG VITE_GEMINI_API_KEY
+
+# Set environment variables for build
+ENV VITE_POCKETBASE_URL=$VITE_POCKETBASE_URL
+ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+
 # Copy package files
 COPY package.json package-lock.json* ./
 
