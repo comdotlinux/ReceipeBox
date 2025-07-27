@@ -15,7 +15,7 @@ services:
     volumes:
       - pocketbase_data:/pb_data
       - pocketbase_public:/pb_public
-      - ./pocketbase/pb_migrations:/pb_migrations:ro
+      - ../pocketbase/pb_migrations:/pb_migrations:ro
     environment:
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD}
@@ -32,8 +32,8 @@ services:
   # SvelteKit Frontend
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
       args:
         - NODE_ENV=production
         - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL}
