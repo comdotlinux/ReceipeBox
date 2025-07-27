@@ -4,7 +4,13 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: myrecipebox-pocketbase
     restart: unless-stopped
-    command: serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public --migrationsDir=/pb_migrations --origins=https://recipe-box.dev-tech.me
+    command: 
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --publicDir=/pb_public
+      - --migrationsDir=/pb_migrations
+      - --origins=${FRONTEND_URL:-https://recipe-box.dev-tech.me}
     ports:
       - "8090:8090"
     volumes:
