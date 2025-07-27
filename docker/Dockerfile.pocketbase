@@ -1,0 +1,35 @@
+FROM alpine:latest
+
+# Install required packages
+RUN apk add --no-cache wget unzip ca-certificates
+
+# Download and install PocketBase
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.20/pocketbase_0.22.20_linux_amd64.zip \
+    && unzip pocketbase_0.22.20_linux_amd64.zip \
+    && chmod +x pocketbase \
+    && mv pocketbase /usr/local/bin/pocketbase \
+    && rm pocketbase_0.22.20_linux_amd64.zip
+
+# Create pb user
+RUN addgroup -g 1001 -S pb && \
+    adduser -S pb -u 1001 -G pb
+
+# Create directories
+RUN mkdir -p /pb_data /pb_public /pb_migrations && \
+    chown -R pb:pb /pb_data /pb_public
+
+# Switch to non-root user
+USER pb
+
+# Expose port
+EXPOSE 8090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+
+# Set working directory
+WORKDIR /
+
+# Entry point
+ENTRYPOINT ["/usr/local/bin/pocketbase"]

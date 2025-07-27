@@ -1,7 +1,9 @@
 services:
   # PocketBase Backend
   pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.pocketbase
     container_name: myrecipebox-pocketbase
     restart: unless-stopped
     command: 
