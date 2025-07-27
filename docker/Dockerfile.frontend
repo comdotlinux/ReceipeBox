@@ -3,8 +3,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Set production environment
-ENV NODE_ENV=production
+# Set development environment for now
+ENV NODE_ENV=development
 
 # Build arguments
 ARG VITE_POCKETBASE_URL=http://localhost:8090
@@ -17,42 +17,18 @@ ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install all dependencies (needed for build)
-RUN npm ci --include=dev || npm install
+# Install dependencies
+RUN npm ci || npm install
 
-# Install Node.js adapter for Docker builds
-RUN npm install @sveltejs/adapter-node
-
-# Copy source code and config files
+# Copy source code
 COPY . .
 
-# Use Docker-specific configs for Node.js adapter and vite
-RUN cp svelte.config.docker.js svelte.config.js
-RUN cp vite.config.docker.ts vite.config.ts
-RUN cp src/app.docker.css src/app.css
-
-# Build the application
-RUN npm run build
-
-# Remove dev dependencies after build
-RUN npm prune --omit=dev
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S sveltekit -u 1001
-
-# Change ownership of app directory
-RUN chown -R sveltekit:nodejs /app
-
-# Switch to non-root user
-USER sveltekit
-
 # Expose port
-EXPOSE 3000
+EXPOSE 5173
 
-# Health check
+# Health check using dev server
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5173/api/health || exit 1
 
-# Start the application
-CMD ["node", "build/index.js"]
+# Start dev server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
