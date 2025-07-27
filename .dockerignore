@@ -1,17 +1,16 @@
-# Exclude everything by default
-*
-
-# Only include what we absolutely need
-!package.json
-!package-lock.json
-!src/
-!static/
-!svelte.config.js
-!vite.config.ts
-!tsconfig.json
-
-# But exclude problematic files/dirs within included dirs
-src/**/*.test.ts
-src/**/*.spec.ts
-static/browserconfig.xml
-static/app.webmanifest
+node_modules
+.git
+.svelte-kit
+build
+.env
+.env.*
+!.env.example
+*.log
+coverage
+e2e-results
+test-results
+playwright-report
+pocketbase/pb_data
+pocketbase/pb_public
+*.db
+*.db-*

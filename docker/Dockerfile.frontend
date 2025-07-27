@@ -20,8 +20,16 @@ COPY package.json package-lock.json* ./
 # Install all dependencies (needed for build)
 RUN npm ci --include=dev || npm install
 
+# Install Node.js adapter for Docker builds
+RUN npm install @sveltejs/adapter-node
+
 # Copy source code and config files
 COPY . .
+
+# Use Docker-specific configs for Node.js adapter and vite
+RUN cp svelte.config.docker.js svelte.config.js
+RUN cp vite.config.docker.ts vite.config.ts
+RUN cp src/app.docker.css src/app.css
 
 # Build the application
 RUN npm run build
@@ -47,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
 
 # Start the application
-CMD ["node", "build"]
+CMD ["node", "build/index.js"]
