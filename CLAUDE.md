@@ -58,7 +58,7 @@
 - **E2E Tests**: 50/50 passing (Auth flows, Recipe CRUD, Visibility, Error handling)
 - **Interactive Coverage UI**: Available via `npm run test:coverage`
 
-### ✅ Completed Features (Phase 1-4 Complete)
+### ✅ Completed Features (Phase 1-5 Complete)
 
 #### **Phase 4: AI Integration** ✅
 
@@ -71,14 +71,18 @@
 - Implemented proper error handling and validation
 - Created tests for AI extraction features (74/74 passing)
 
+#### **Phase 5: Search & Discovery** ✅
+
+- Implemented advanced search functionality with multiple filter options
+- Created dedicated search page (/search) with comprehensive filtering
+- Built tag management interface for administrators (/admin/tags)
+- Added popular tags display and quick filtering on homepage
+- Enhanced navigation with search functionality in header
+- Integrated cuisine, difficulty, and dietary preference filters
+- Added real-time search with auto-complete functionality
+- Created tag-based filtering with visual tag indicators
+
 ### 📋 Upcoming Phases
-
-#### **Phase 5: Search & Discovery**
-
-- Full-text search functionality
-- Tag-based filtering
-- Advanced search features
-- Tag management interface
 
 #### **Phase 6: PWA & Offline Features**
 
@@ -166,3 +170,125 @@ npm run test:e2e
 3. Add tag-based filtering and advanced search
 4. Create tag management interface
 5. Build search optimization features
+
+---
+
+# Consolidated Documentation
+
+## Product Requirements Document (Archived from PRD.md)
+
+### Executive Summary
+
+RecipeVault is a Progressive Web Application that enables users to collect, organize, and access recipes both online and offline. The app leverages AI-powered recipe extraction from URLs and provides a clean, searchable interface for recipe management.
+
+### Key Features
+
+1. **Progressive Web App** with installation capability
+2. **AI-Powered Recipe Extraction** from URLs and images
+3. **Triple Input Methods** (URL, manual form, and image upload with OCR)
+4. **Advanced Search & Tagging** system
+5. **Offline-First Architecture** with smart caching
+6. **Role-Based Access Control** (Admin/User)
+7. **Material Design** with theme support
+
+### Technical Stack
+
+- **Frontend**: SvelteKit with TypeScript
+- **Backend**: PocketBase (Go-based BaaS)
+- **Authentication**: PocketBase Auth (OAuth2, email/password)
+- **Database**: PocketBase SQLite (with optional PostgreSQL)
+- **AI Integration**: Google Gemini API (via PocketBase hooks/extensions)
+- **Testing**: Vitest + Playwright for unit and integration tests
+
+---
+
+## Deployment Guide (Archived from DEPLOYMENT.md)
+
+### Production Architecture Overview
+
+- **Frontend**: SvelteKit app container (port 3000)
+- **Backend**: PocketBase database and API container (port 8090)
+- **Storage**: Docker volumes for persistent data (database + uploaded images)
+- **Orchestration**: Docker Compose for multi-container management
+- **External**: Reverse proxy and TLS handled externally
+
+### Prerequisites
+
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- Server with at least 2GB RAM and 10GB storage
+- External reverse proxy/load balancer (Cloudflare, AWS ALB, etc.)
+
+### Key Deployment Files
+
+- `docker-compose.prod.yml` - Production Docker Compose configuration
+- `Dockerfile.frontend` - Frontend container build configuration
+- `scripts/migrate.sh` - Database migration script
+- `scripts/backup.sh` - Automated backup script
+- `scripts/restore.sh` - Backup restoration script
+
+---
+
+## Theme Testing Guide (Archived from theme-testing-guide.md)
+
+### Theme Toggle Fixes Applied
+
+1. **Homepage Trash Icon Fixed** 📖 - Changed to recipe book icon
+2. **Header Logo Fixed** 📚 - Changed to recipe book icon  
+3. **Theme Toggle Functionality Fixed** 🌓 - Fully functional 3-way toggle
+
+### Theme Cycle Testing
+
+1. **Light Mode** ☀️ → Click → **Dark Mode** 🌙
+2. **Dark Mode** 🌙 → Click → **System Mode** 🖥️ 
+3. **System Mode** 🖥️ → Click → **Light Mode** ☀️
+
+### Testing Steps
+
+1. Open http://localhost:5174/
+2. Click the sun/moon button in the header
+3. Verify background changes from light to dark
+4. Verify text colors invert appropriately
+5. Verify icon changes to reflect current mode
+6. Test persistence by refreshing page
+
+---
+
+## Debug Theme Guide (Archived from debug-theme.md)
+
+### Debug Console Messages
+
+When page loads, you should see:
+```
+Initial script - theme: system isDark: true
+Applying theme: system
+Setting dark mode: true
+Added dark class to html element
+```
+
+When clicking theme toggle:
+```
+Setting theme to: light
+Theme store changed to: light
+Applying theme: light  
+Setting dark mode: false
+Removed dark class from html element
+```
+
+### Manual Debug Commands
+
+```javascript
+// Check current theme
+console.log('Theme in localStorage:', localStorage.getItem('theme'));
+console.log('Dark class on HTML:', document.documentElement.classList.contains('dark'));
+
+// Force light mode
+localStorage.setItem('theme', 'light');
+document.documentElement.classList.remove('dark');
+location.reload();
+
+// Force dark mode
+localStorage.setItem('theme', 'dark');
+document.documentElement.classList.add('dark');
+location.reload();
+```
