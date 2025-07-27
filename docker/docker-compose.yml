@@ -32,7 +32,7 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         - NODE_ENV=production
-        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase.recipe-box.dev-tech.me}
+        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
         - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
     container_name: myrecipebox-frontend
     restart: unless-stopped
@@ -43,7 +43,7 @@ services:
         condition: service_healthy
     environment:
       - NODE_ENV=production
-      - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase.recipe-box.dev-tech.me}
+      - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
       - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS:-recipe-box.dev-tech.me}
     networks:
       - recipe_network
