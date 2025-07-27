@@ -4,19 +4,19 @@ services:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: myrecipebox-pocketbase
     restart: unless-stopped
-    command: serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public --migrationsDir=/pb_migrations --hooksDir=/pb_hooks
+    command: serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public --migrationsDir=/pb_migrations --origins=${FRONTEND_URL:-https://recipe-box.dev-tech.me}
     ports:
       - "8090:8090"
     volumes:
       - pocketbase_data:/pb_data
       - pocketbase_public:/pb_public
       - ../pocketbase/pb_migrations:/pb_migrations:ro
-      - ../pocketbase/pb_hooks:/pb_hooks:ro
     environment:
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-admin@example.com}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-password123}
       - PB_ENCRYPTION_KEY=${PB_ENCRYPTION_KEY:-your-32-char-encryption-key-here}
-      - PB_CORS_ORIGINS=${PB_CORS_ORIGINS:-https://recipe-box.dev-tech.me}
+      - FRONTEND_URL=${FRONTEND_URL:-https://recipe-box.dev-tech.me}
+      - POCKETBASE_URL=${POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 8090 || exit 1"]
       interval: 10s
@@ -33,7 +33,7 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         - NODE_ENV=production
-        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
+        - VITE_POCKETBASE_URL=${POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
         - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
     container_name: myrecipebox-frontend
     restart: unless-stopped
@@ -44,8 +44,8 @@ services:
         condition: service_healthy
     environment:
       - NODE_ENV=production
-      - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
-      - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS:-recipe-box.dev-tech.me}
+      - VITE_POCKETBASE_URL=${POCKETBASE_URL:-https://pocketbase-recipe-box.dev-tech.me}
+      - VITE_ALLOWED_HOSTS=${FRONTEND_DOMAIN:-recipe-box.dev-tech.me}
     networks:
       - recipe_network
 
