@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { hasRole, isAdmin, isReader, canCreateRecipe, canEditRecipe, canDeleteRecipe } from './auth';
+import {
+	hasRole,
+	isAdmin,
+	isReader,
+	canCreateRecipe,
+	canEditRecipe,
+	canDeleteRecipe
+} from './auth';
 
 describe('Auth Utility Functions', () => {
 	const adminUser = {

@@ -18,166 +18,193 @@ export const showInstallPrompt = writable(false);
 export const globalLoading = writable(false);
 
 // Notifications
-export const notifications = writable<Array<{
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-  timeout?: number;
-}>>([]);
+export const notifications = writable<
+	Array<{
+		id: string;
+		type: 'success' | 'error' | 'warning' | 'info';
+		message: string;
+		timeout?: number;
+	}>
+>([]);
 
 class AppStore {
-  constructor() {
-    if (browser) {
-      this.initializeTheme();
-      this.initializeOnlineStatus();
-      this.initializePWA();
-    }
-  }
+	constructor() {
+		if (browser) {
+			this.initializeTheme();
+			this.initializeOnlineStatus();
+			this.initializePWA();
+		}
+	}
 
-  private initializeTheme(): void {
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
-    if (savedTheme) {
-      theme.set(savedTheme);
-    }
+	private initializeTheme(): void {
+		// Load theme from localStorage
+		const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
+		
+		// Watch for system theme changes
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    // Watch for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const updateDarkMode = () => {
-      theme.subscribe(currentTheme => {
-        let isDark = false;
-        
-        if (currentTheme === 'dark') {
-          isDark = true;
-        } else if (currentTheme === 'system') {
-          isDark = mediaQuery.matches;
-        }
-        
-        isDarkMode.set(isDark);
-        
-        // Apply theme to document
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        
-        // Save to localStorage
-        localStorage.setItem('theme', currentTheme);
-      });
-    };
+		const applyTheme = (currentTheme: 'light' | 'dark' | 'system') => {
+			console.log('Applying theme:', currentTheme);
+			let isDark = false;
 
-    updateDarkMode();
-    mediaQuery.addEventListener('change', updateDarkMode);
-  }
+			if (currentTheme === 'dark') {
+				isDark = true;
+			} else if (currentTheme === 'system') {
+				isDark = mediaQuery.matches;
+			}
 
-  private initializeOnlineStatus(): void {
-    isOnline.set(navigator.onLine);
-    
-    window.addEventListener('online', () => isOnline.set(true));
-    window.addEventListener('offline', () => isOnline.set(false));
-  }
+			console.log('Setting dark mode:', isDark);
+			isDarkMode.set(isDark);
 
-  private initializePWA(): void {
-    // Check if app is installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      isInstalled.set(true);
-    }
+			// Apply theme to document
+			if (isDark) {
+				document.documentElement.classList.add('dark');
+				console.log('Added dark class to html element');
+			} else {
+				document.documentElement.classList.remove('dark');
+				console.log('Removed dark class from html element');
+			}
 
-    // Listen for beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      showInstallPrompt.set(true);
-      
-      // Store the event for later use
-      (window as any).deferredPrompt = e;
-    });
+			// Save to localStorage
+			localStorage.setItem('theme', currentTheme);
+		};
 
-    // Listen for app installed event
-    window.addEventListener('appinstalled', () => {
-      isInstalled.set(true);
-      showInstallPrompt.set(false);
-      this.addNotification({
-        type: 'success',
-        message: 'App installed successfully!',
-        timeout: 5000
-      });
-    });
-  }
+		// Set initial theme
+		const initialTheme = savedTheme || 'system';
+		console.log('Initial theme:', initialTheme);
+		
+		// Apply theme immediately
+		applyTheme(initialTheme);
+		
+		// Set the store value
+		theme.set(initialTheme);
 
-  setTheme(newTheme: 'light' | 'dark' | 'system'): void {
-    theme.set(newTheme);
-  }
+		// Subscribe to theme changes (skip the first one since we already applied it)
+		let isFirstCall = true;
+		theme.subscribe((currentTheme) => {
+			if (isFirstCall) {
+				isFirstCall = false;
+				return;
+			}
+			console.log('Theme store changed to:', currentTheme);
+			applyTheme(currentTheme);
+		});
 
-  toggleSidebar(): void {
-    sidebarOpen.update(open => !open);
-  }
+		// Update when system preference changes
+		mediaQuery.addEventListener('change', () => {
+			// Get current theme value without causing subscription loop
+			const currentTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' || 'system';
+			console.log('System preference changed, current theme:', currentTheme);
+			if (currentTheme === 'system') {
+				applyTheme(currentTheme);
+			}
+		});
+	}
 
-  closeSidebar(): void {
-    sidebarOpen.set(false);
-  }
+	private initializeOnlineStatus(): void {
+		isOnline.set(navigator.onLine);
 
-  async installApp(): Promise<void> {
-    const deferredPrompt = (window as any).deferredPrompt;
-    
-    if (!deferredPrompt) {
-      return;
-    }
+		window.addEventListener('online', () => isOnline.set(true));
+		window.addEventListener('offline', () => isOnline.set(false));
+	}
 
-    // Show the install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
-    }
-    
-    // Clear the deferredPrompt
-    (window as any).deferredPrompt = null;
-    showInstallPrompt.set(false);
-  }
+	private initializePWA(): void {
+		// Check if app is installed
+		if (window.matchMedia('(display-mode: standalone)').matches) {
+			isInstalled.set(true);
+		}
 
-  addNotification(notification: {
-    type: 'success' | 'error' | 'warning' | 'info';
-    message: string;
-    timeout?: number;
-  }): void {
-    const id = Math.random().toString(36).substr(2, 9);
-    const newNotification = { ...notification, id };
-    
-    notifications.update(current => [...current, newNotification]);
-    
-    // Auto-remove after timeout
-    if (notification.timeout) {
-      setTimeout(() => {
-        this.removeNotification(id);
-      }, notification.timeout);
-    }
-  }
+		// Listen for beforeinstallprompt event
+		window.addEventListener('beforeinstallprompt', (e) => {
+			e.preventDefault();
+			showInstallPrompt.set(true);
 
-  removeNotification(id: string): void {
-    notifications.update(current => current.filter(n => n.id !== id));
-  }
+			// Store the event for later use
+			(window as any).deferredPrompt = e;
+		});
 
-  clearAllNotifications(): void {
-    notifications.set([]);
-  }
+		// Listen for app installed event
+		window.addEventListener('appinstalled', () => {
+			isInstalled.set(true);
+			showInstallPrompt.set(false);
+			this.addNotification({
+				type: 'success',
+				message: 'App installed successfully!',
+				timeout: 5000
+			});
+		});
+	}
+
+	setTheme(newTheme: 'light' | 'dark' | 'system'): void {
+		console.log('Setting theme to:', newTheme);
+		theme.set(newTheme);
+	}
+
+	toggleSidebar(): void {
+		sidebarOpen.update((open) => !open);
+	}
+
+	closeSidebar(): void {
+		sidebarOpen.set(false);
+	}
+
+	async installApp(): Promise<void> {
+		const deferredPrompt = (window as any).deferredPrompt;
+
+		if (!deferredPrompt) {
+			return;
+		}
+
+		// Show the install prompt
+		deferredPrompt.prompt();
+
+		// Wait for the user to respond to the prompt
+		const { outcome } = await deferredPrompt.userChoice;
+
+		if (outcome === 'accepted') {
+			console.log('User accepted the install prompt');
+		} else {
+			console.log('User dismissed the install prompt');
+		}
+
+		// Clear the deferredPrompt
+		(window as any).deferredPrompt = null;
+		showInstallPrompt.set(false);
+	}
+
+	addNotification(notification: {
+		type: 'success' | 'error' | 'warning' | 'info';
+		message: string;
+		timeout?: number;
+	}): void {
+		const id = Math.random().toString(36).substr(2, 9);
+		const newNotification = { ...notification, id };
+
+		notifications.update((current) => [...current, newNotification]);
+
+		// Auto-remove after timeout
+		if (notification.timeout) {
+			setTimeout(() => {
+				this.removeNotification(id);
+			}, notification.timeout);
+		}
+	}
+
+	removeNotification(id: string): void {
+		notifications.update((current) => current.filter((n) => n.id !== id));
+	}
+
+	clearAllNotifications(): void {
+		notifications.set([]);
+	}
 }
 
 export const appStore = new AppStore();
 
 // Derived stores
-export const currentThemeClass = derived(
-  [theme, isDarkMode],
-  ([$theme, $isDarkMode]) => {
-    if ($theme === 'dark' || ($theme === 'system' && $isDarkMode)) {
-      return 'dark';
-    }
-    return 'light';
-  }
-);
+export const currentThemeClass = derived([theme, isDarkMode], ([$theme, $isDarkMode]) => {
+	if ($theme === 'dark' || ($theme === 'system' && $isDarkMode)) {
+		return 'dark';
+	}
+	return 'light';
+});

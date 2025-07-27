@@ -66,7 +66,7 @@ export async function cleanupTestData() {
 			const recipes = await pb.collection('recipes').getList(1, 100, {
 				filter: 'title ~ "Test" || title ~ "E2E"'
 			});
-			
+
 			for (const recipe of recipes.items) {
 				try {
 					await pb.collection('recipes').delete(recipe.id);
@@ -84,36 +84,44 @@ export async function cleanupTestData() {
 	}
 }
 
-export async function createTestRecipe(page: Page, data: {
-	title: string;
-	description: string;
-	is_published: boolean;
-}): Promise<string> {
+export async function createTestRecipe(
+	page: Page,
+	data: {
+		title: string;
+		description: string;
+		is_published: boolean;
+	}
+): Promise<string> {
 	await page.goto('/admin/recipes/new');
 	await page.waitForLoadState('networkidle');
-	
+
 	// Fill in recipe form
 	await page.fill('input[placeholder="Enter recipe title"]', data.title);
 	await page.fill('textarea[placeholder="Brief description of the recipe..."]', data.description);
-	
+
 	// The form should have at least one ingredient and instruction by default
 	// Fill the first ingredient
 	await page.fill('input[placeholder="Ingredient name"]', 'Test ingredient');
 	await page.fill('input[placeholder="Amount"]', '1');
 	await page.fill('input[placeholder="Unit"]', 'cup');
-	
+
 	// Fill the first instruction
-	await page.fill('textarea[placeholder="Describe this step in detail..."]', 'Test instruction step');
-	
+	await page.fill(
+		'textarea[placeholder="Describe this step in detail..."]',
+		'Test instruction step'
+	);
+
 	// Note: is_published is hardcoded to true in RecipeForm, no need to check
 	// Listen for the recipe creation API call
-	const responsePromise = page.waitForResponse(response => 
-		response.url().includes('/api/collections/recipes/records') && response.request().method() === 'POST'
+	const responsePromise = page.waitForResponse(
+		(response) =>
+			response.url().includes('/api/collections/recipes/records') &&
+			response.request().method() === 'POST'
 	);
-	
+
 	// Submit form
 	await page.click('button:has-text("Create Recipe")');
-	
+
 	// Get recipe ID from API response
 	const response = await responsePromise;
 	const responseBody = await response.text();

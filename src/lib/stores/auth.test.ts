@@ -3,296 +3,298 @@ import { get } from 'svelte/store';
 
 // Mock the PocketBase service before importing
 vi.mock('$lib/services', () => ({
-  pb: {
-    login: vi.fn(),
-    register: vi.fn(),
-    logout: vi.fn(),
-    refreshAuth: vi.fn(),
-    loginWithGoogle: vi.fn(),
-    loginWithGitHub: vi.fn(),
-    requestPasswordReset: vi.fn(),
-    isAuthenticated: false,
-    currentUser: null,
-    client: {
-      authStore: {
-        onChange: vi.fn()
-      }
-    }
-  }
+	pb: {
+		login: vi.fn(),
+		register: vi.fn(),
+		logout: vi.fn(),
+		refreshAuth: vi.fn(),
+		loginWithGoogle: vi.fn(),
+		loginWithGitHub: vi.fn(),
+		requestPasswordReset: vi.fn(),
+		isAuthenticated: false,
+		currentUser: null,
+		client: {
+			authStore: {
+				onChange: vi.fn()
+			}
+		}
+	}
 }));
 
 import { authStore, user, isAuthenticated, isAdmin, authLoading, authError } from './auth';
 import { pb as mockPb } from '$lib/services';
 
 describe('Auth Store', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    
-    // Reset store values
-    user.set(null);
-    authLoading.set(false);
-    authError.set(null);
-  });
+	beforeEach(() => {
+		vi.clearAllMocks();
 
-  describe('Login', () => {
-    it('should login successfully', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'reader' as const
-      };
+		// Reset store values
+		user.set(null);
+		authLoading.set(false);
+		authError.set(null);
+	});
 
-      mockPb.login.mockResolvedValue({
-        record: mockUser,
-        token: 'test-token'
-      });
+	describe('Login', () => {
+		it('should login successfully', async () => {
+			const mockUser = {
+				id: '1',
+				email: 'test@example.com',
+				name: 'Test User',
+				role: 'reader' as const
+			};
 
-      await authStore.login('test@example.com', 'password');
+			mockPb.login.mockResolvedValue({
+				record: mockUser,
+				token: 'test-token'
+			});
 
-      expect(mockPb.login).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password'
-      });
-      expect(get(user)).toEqual(mockUser);
-      expect(get(authLoading)).toBe(false);
-      expect(get(authError)).toBeNull();
-    });
+			await authStore.login('test@example.com', 'password');
 
-    it('should handle login error', async () => {
-      const errorMessage = 'Invalid credentials';
-      mockPb.login.mockRejectedValue(new Error(errorMessage));
+			expect(mockPb.login).toHaveBeenCalledWith({
+				email: 'test@example.com',
+				password: 'password'
+			});
+			expect(get(user)).toEqual(mockUser);
+			expect(get(authLoading)).toBe(false);
+			expect(get(authError)).toBeNull();
+		});
 
-      await expect(authStore.login('test@example.com', 'wrong')).rejects.toThrow(errorMessage);
+		it('should handle login error', async () => {
+			const errorMessage = 'Invalid credentials';
+			mockPb.login.mockRejectedValue(new Error(errorMessage));
 
-      expect(get(user)).toBeNull();
-      expect(get(authLoading)).toBe(false);
-      expect(get(authError)).toBe(errorMessage);
-    });
+			await expect(authStore.login('test@example.com', 'wrong')).rejects.toThrow(errorMessage);
 
-    it('should set loading state during login', async () => {
-      mockPb.login.mockImplementation(() => {
-        expect(get(authLoading)).toBe(true);
-        return Promise.resolve({
-          record: { id: '1', email: 'test@example.com', name: 'Test', role: 'reader' },
-          token: 'token'
-        });
-      });
+			expect(get(user)).toBeNull();
+			expect(get(authLoading)).toBe(false);
+			expect(get(authError)).toBe(errorMessage);
+		});
 
-      await authStore.login('test@example.com', 'password');
-      expect(get(authLoading)).toBe(false);
-    });
-  });
+		it('should set loading state during login', async () => {
+			mockPb.login.mockImplementation(() => {
+				expect(get(authLoading)).toBe(true);
+				return Promise.resolve({
+					record: { id: '1', email: 'test@example.com', name: 'Test', role: 'reader' },
+					token: 'token'
+				});
+			});
 
-  describe('Registration', () => {
-    it('should register successfully', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'new@example.com',
-        name: 'New User',
-        role: 'reader' as const
-      };
+			await authStore.login('test@example.com', 'password');
+			expect(get(authLoading)).toBe(false);
+		});
+	});
 
-      mockPb.register.mockResolvedValue({
-        record: mockUser,
-        token: 'new-token'
-      });
+	describe('Registration', () => {
+		it('should register successfully', async () => {
+			const mockUser = {
+				id: '1',
+				email: 'new@example.com',
+				name: 'New User',
+				role: 'reader' as const
+			};
 
-      await authStore.register('new@example.com', 'password', 'New User');
+			mockPb.register.mockResolvedValue({
+				record: mockUser,
+				token: 'new-token'
+			});
 
-      expect(mockPb.register).toHaveBeenCalledWith({
-        email: 'new@example.com',
-        password: 'password',
-        name: 'New User'
-      });
-      expect(get(user)).toEqual(mockUser);
-      expect(get(authError)).toBeNull();
-    });
+			await authStore.register('new@example.com', 'password', 'New User');
 
-    it('should handle registration error', async () => {
-      const errorMessage = 'Email already exists';
-      mockPb.register.mockRejectedValue(new Error(errorMessage));
+			expect(mockPb.register).toHaveBeenCalledWith({
+				email: 'new@example.com',
+				password: 'password',
+				name: 'New User'
+			});
+			expect(get(user)).toEqual(mockUser);
+			expect(get(authError)).toBeNull();
+		});
 
-      await expect(authStore.register('existing@example.com', 'password', 'User'))
-        .rejects.toThrow(errorMessage);
+		it('should handle registration error', async () => {
+			const errorMessage = 'Email already exists';
+			mockPb.register.mockRejectedValue(new Error(errorMessage));
 
-      expect(get(user)).toBeNull();
-      expect(get(authError)).toBe(errorMessage);
-    });
-  });
+			await expect(authStore.register('existing@example.com', 'password', 'User')).rejects.toThrow(
+				errorMessage
+			);
 
-  describe('OAuth Login', () => {
-    it('should login with Google', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'google@example.com',
-        name: 'Google User',
-        role: 'reader' as const
-      };
+			expect(get(user)).toBeNull();
+			expect(get(authError)).toBe(errorMessage);
+		});
+	});
 
-      mockPb.loginWithGoogle.mockResolvedValue({
-        record: mockUser,
-        token: 'google-token'
-      });
+	describe('OAuth Login', () => {
+		it('should login with Google', async () => {
+			const mockUser = {
+				id: '1',
+				email: 'google@example.com',
+				name: 'Google User',
+				role: 'reader' as const
+			};
 
-      await authStore.loginWithGoogle();
+			mockPb.loginWithGoogle.mockResolvedValue({
+				record: mockUser,
+				token: 'google-token'
+			});
 
-      expect(mockPb.loginWithGoogle).toHaveBeenCalled();
-      expect(get(user)).toEqual(mockUser);
-    });
+			await authStore.loginWithGoogle();
 
-    it('should login with GitHub', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'github@example.com',
-        name: 'GitHub User',
-        role: 'reader' as const
-      };
+			expect(mockPb.loginWithGoogle).toHaveBeenCalled();
+			expect(get(user)).toEqual(mockUser);
+		});
 
-      mockPb.loginWithGitHub.mockResolvedValue({
-        record: mockUser,
-        token: 'github-token'
-      });
+		it('should login with GitHub', async () => {
+			const mockUser = {
+				id: '1',
+				email: 'github@example.com',
+				name: 'GitHub User',
+				role: 'reader' as const
+			};
 
-      await authStore.loginWithGitHub();
+			mockPb.loginWithGitHub.mockResolvedValue({
+				record: mockUser,
+				token: 'github-token'
+			});
 
-      expect(mockPb.loginWithGitHub).toHaveBeenCalled();
-      expect(get(user)).toEqual(mockUser);
-    });
-  });
+			await authStore.loginWithGitHub();
 
-  describe('Logout', () => {
-    it('should logout successfully', async () => {
-      // Set initial user
-      user.set({
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'reader',
-        emailVisibility: true,
-        verified: true,
-        created: '2024-01-01',
-        updated: '2024-01-01'
-      });
+			expect(mockPb.loginWithGitHub).toHaveBeenCalled();
+			expect(get(user)).toEqual(mockUser);
+		});
+	});
 
-      mockPb.logout.mockResolvedValue(undefined);
+	describe('Logout', () => {
+		it('should logout successfully', async () => {
+			// Set initial user
+			user.set({
+				id: '1',
+				email: 'test@example.com',
+				name: 'Test User',
+				role: 'reader',
+				emailVisibility: true,
+				verified: true,
+				created: '2024-01-01',
+				updated: '2024-01-01'
+			});
 
-      await authStore.logout();
+			mockPb.logout.mockResolvedValue(undefined);
 
-      expect(mockPb.logout).toHaveBeenCalled();
-      expect(get(user)).toBeNull();
-      expect(get(authError)).toBeNull();
-    });
-  });
+			await authStore.logout();
 
-  describe('Derived Stores', () => {
-    it('should calculate isAuthenticated correctly', () => {
-      expect(get(isAuthenticated)).toBe(false);
+			expect(mockPb.logout).toHaveBeenCalled();
+			expect(get(user)).toBeNull();
+			expect(get(authError)).toBeNull();
+		});
+	});
 
-      user.set({
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'reader',
-        emailVisibility: true,
-        verified: true,
-        created: '2024-01-01',
-        updated: '2024-01-01'
-      });
+	describe('Derived Stores', () => {
+		it('should calculate isAuthenticated correctly', () => {
+			expect(get(isAuthenticated)).toBe(false);
 
-      expect(get(isAuthenticated)).toBe(true);
-    });
+			user.set({
+				id: '1',
+				email: 'test@example.com',
+				name: 'Test User',
+				role: 'reader',
+				emailVisibility: true,
+				verified: true,
+				created: '2024-01-01',
+				updated: '2024-01-01'
+			});
 
-    it('should calculate isAdmin correctly', () => {
-      expect(get(isAdmin)).toBe(false);
+			expect(get(isAuthenticated)).toBe(true);
+		});
 
-      // Set reader user
-      user.set({
-        id: '1',
-        email: 'reader@example.com',
-        name: 'Reader User',
-        role: 'reader',
-        emailVisibility: true,
-        verified: true,
-        created: '2024-01-01',
-        updated: '2024-01-01'
-      });
+		it('should calculate isAdmin correctly', () => {
+			expect(get(isAdmin)).toBe(false);
 
-      expect(get(isAdmin)).toBe(false);
+			// Set reader user
+			user.set({
+				id: '1',
+				email: 'reader@example.com',
+				name: 'Reader User',
+				role: 'reader',
+				emailVisibility: true,
+				verified: true,
+				created: '2024-01-01',
+				updated: '2024-01-01'
+			});
 
-      // Set admin user
-      user.set({
-        id: '2',
-        email: 'admin@example.com',
-        name: 'Admin User',
-        role: 'admin',
-        emailVisibility: true,
-        verified: true,
-        created: '2024-01-01',
-        updated: '2024-01-01'
-      });
+			expect(get(isAdmin)).toBe(false);
 
-      expect(get(isAdmin)).toBe(true);
-    });
-  });
+			// Set admin user
+			user.set({
+				id: '2',
+				email: 'admin@example.com',
+				name: 'Admin User',
+				role: 'admin',
+				emailVisibility: true,
+				verified: true,
+				created: '2024-01-01',
+				updated: '2024-01-01'
+			});
 
-  describe('Password Reset', () => {
-    it('should request password reset', async () => {
-      mockPb.requestPasswordReset.mockResolvedValue(undefined);
+			expect(get(isAdmin)).toBe(true);
+		});
+	});
 
-      await authStore.requestPasswordReset('test@example.com');
+	describe('Password Reset', () => {
+		it('should request password reset', async () => {
+			mockPb.requestPasswordReset.mockResolvedValue(undefined);
 
-      expect(mockPb.requestPasswordReset).toHaveBeenCalledWith('test@example.com');
-      expect(get(authError)).toBeNull();
-    });
+			await authStore.requestPasswordReset('test@example.com');
 
-    it('should handle password reset error', async () => {
-      const errorMessage = 'User not found';
-      mockPb.requestPasswordReset.mockRejectedValue(new Error(errorMessage));
+			expect(mockPb.requestPasswordReset).toHaveBeenCalledWith('test@example.com');
+			expect(get(authError)).toBeNull();
+		});
 
-      await expect(authStore.requestPasswordReset('nonexistent@example.com'))
-        .rejects.toThrow(errorMessage);
+		it('should handle password reset error', async () => {
+			const errorMessage = 'User not found';
+			mockPb.requestPasswordReset.mockRejectedValue(new Error(errorMessage));
 
-      expect(get(authError)).toBe(errorMessage);
-    });
-  });
+			await expect(authStore.requestPasswordReset('nonexistent@example.com')).rejects.toThrow(
+				errorMessage
+			);
 
-  describe('Auth Refresh', () => {
-    it('should refresh auth successfully', async () => {
-      const mockUser = {
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'reader' as const
-      };
+			expect(get(authError)).toBe(errorMessage);
+		});
+	});
 
-      mockPb.refreshAuth.mockResolvedValue({
-        record: mockUser,
-        token: 'refreshed-token'
-      });
+	describe('Auth Refresh', () => {
+		it('should refresh auth successfully', async () => {
+			const mockUser = {
+				id: '1',
+				email: 'test@example.com',
+				name: 'Test User',
+				role: 'reader' as const
+			};
 
-      await authStore.refreshAuth();
+			mockPb.refreshAuth.mockResolvedValue({
+				record: mockUser,
+				token: 'refreshed-token'
+			});
 
-      expect(mockPb.refreshAuth).toHaveBeenCalled();
-      expect(get(user)).toEqual(mockUser);
-    });
+			await authStore.refreshAuth();
 
-    it('should handle refresh failure', async () => {
-      mockPb.refreshAuth.mockResolvedValue(null);
+			expect(mockPb.refreshAuth).toHaveBeenCalled();
+			expect(get(user)).toEqual(mockUser);
+		});
 
-      await authStore.refreshAuth();
+		it('should handle refresh failure', async () => {
+			mockPb.refreshAuth.mockResolvedValue(null);
 
-      expect(get(user)).toBeNull();
-    });
-  });
+			await authStore.refreshAuth();
 
-  describe('Error Management', () => {
-    it('should clear error', () => {
-      authError.set('Some error');
-      expect(get(authError)).toBe('Some error');
+			expect(get(user)).toBeNull();
+		});
+	});
 
-      authStore.clearError();
-      expect(get(authError)).toBeNull();
-    });
-  });
+	describe('Error Management', () => {
+		it('should clear error', () => {
+			authError.set('Some error');
+			expect(get(authError)).toBe('Some error');
+
+			authStore.clearError();
+			expect(get(authError)).toBeNull();
+		});
+	});
 });

@@ -8,7 +8,6 @@
 
 - Updated Go deps and the min Go releleaser GitHub action version to 1.23.4.
 
-
 ## v0.23.4
 
 - Fixed `autodate` fields not refreshing when calling `Save` multiple times on the same `Record` instance ([#6000](https://github.com/pocketbase/pocketbase/issues/6000)).
@@ -19,13 +18,11 @@
 
 - Updated Go and npm dependencies.
 
-
 ## v0.23.3
 
 - Fixed Gzip middleware not applying when serving static files.
 
 - Fixed `Record.Fresh()`/`Record.Clone()` methods not properly cloning `autodate` fields ([#5973](https://github.com/pocketbase/pocketbase/discussions/5973)).
-
 
 ## v0.23.2
 
@@ -38,13 +35,11 @@
 - Added collection rules change list in the confirmation popup
   (_to avoid getting anoying during development, the rules confirmation currently is enabled only when using https_).
 
-
 ## v0.23.1
 
 - Added `RequestEvent.Blob(status, contentType, bytes)` response write helper ([#5940](https://github.com/pocketbase/pocketbase/discussions/5940)).
 
 - Added more descriptive error messages.
-
 
 ## v0.23.0
 
@@ -55,6 +50,7 @@
 > will be backported for at least until Q1 of 2025 (_if not longer_).
 >
 > **If you don't plan upgrading make sure to pin the SDKs version to their latest PocketBase v0.22.x compatible:**
+>
 > - JS SDK: `<0.22.0`
 > - Dart SDK: `<0.19.0`
 
@@ -64,7 +60,8 @@
 > Existing `pb_data` will be automatically upgraded with the start of the new executable,
 > but custom Go or JSVM (`pb_hooks`, `pb_migrations`) and JS/Dart SDK code will have to be migrated manually.
 > Please refer to the below upgrade guides:
-> - Go:   https://pocketbase.io/v023upgrade/go/.
+>
+> - Go: https://pocketbase.io/v023upgrade/go/.
 > - JSVM: https://pocketbase.io/v023upgrade/jsvm/.
 >
 > If you had already switched to some of the earlier `<v0.23.0-rc14` versions and have generated a full collections snapshot migration (aka. `./pocketbase migrate collections`), then you may have to regenerate the migration file to ensure that it includes the latest changes.
@@ -96,14 +93,14 @@ There are a lot of changes but to highlight some of the most notable ones:
 - Notion OAuth2 provider ([#4999](https://github.com/pocketbase/pocketbase/pull/4999); thanks @s-li1).
 - monday.com OAuth2 provider ([#5346](https://github.com/pocketbase/pocketbase/pull/5346); thanks @Jaytpa01).
 - New Instagram provider compatible with the new Instagram Login APIs ([#5588](https://github.com/pocketbase/pocketbase/pull/5588); thanks @pnmcosta).
-    _The provider key is `instagram2` to prevent conflicts with existing linked users._
+  _The provider key is `instagram2` to prevent conflicts with existing linked users._
 - Option to retrieve the OIDC OAuth2 user info from the `id_token` payload for the cases when the provider doesn't have a dedicated user info endpoint.
 - Various minor UI improvements (_recursive `Presentable` view, slightly different collection options organization, zoom/pan for the logs chart, etc._)
 - and many more...
 
 #### Go/JSVM APIs changes
 
-> - Go:   https://pocketbase.io/v023upgrade/go/.
+> - Go: https://pocketbase.io/v023upgrade/go/.
 > - JSVM: https://pocketbase.io/v023upgrade/jsvm/.
 
 #### SDKs changes
@@ -130,12 +127,13 @@ There are a lot of changes but to highlight some of the most notable ones:
 - ⚠️ Removed `/api/admins/*` endpoints because admins are converted to `_superusers` auth collection records.
 
 - ⚠️ Previously when uploading new files to a multiple `file` field, new files were automatically appended to the existing field values.
-     This behaviour has changed with v0.23+ and for consistency with the other multi-valued fields when uploading new files they will replace the old ones. If you want to prepend or append new files to an existing multiple `file` field value you can use the `+` prefix or suffix:
-     ```js
-     "documents": [file1, file2]  // => [file1_name, file2_name]
-     "+documents": [file1, file2] // => [file1_name, file2_name, old1_name, old2_name]
-     "documents+": [file1, file2] // => [old1_name, old2_name, file1_name, file2_name]
-     ```
+  This behaviour has changed with v0.23+ and for consistency with the other multi-valued fields when uploading new files they will replace the old ones. If you want to prepend or append new files to an existing multiple `file` field value you can use the `+` prefix or suffix:
+
+  ```js
+  "documents": [file1, file2]  // => [file1_name, file2_name]
+  "+documents": [file1, file2] // => [file1_name, file2_name, old1_name, old2_name]
+  "documents+": [file1, file2] // => [old1_name, old2_name, file1_name, file2_name]
+  ```
 
 - ⚠️ Removed `GET /records/{id}/external-auths` and `DELETE /records/{id}/external-auths/{provider}` endpoints because this is now handled by sending list and delete requests to the `_externalAuths` collection.
 
@@ -144,42 +142,44 @@ There are a lot of changes but to highlight some of the most notable ones:
 - ⚠️ New flatten Collection model and fields structure. The Collection model Web APIs are mostly used by the Dashboard UI and rarely by the end users, but if you want to check all changes please refer to the [Collection Go struct](https://github.com/pocketbase/pocketbase/blob/develop/core/collection_model.go#L308).
 
 - ⚠️ The top level error response `code` key was renamed to `status` for consistency with the Go APIs.
-    The error field key remains `code`:
-    ```js
-    {
-        "status": 400, // <-- old: "code"
-        "message": "Failed to create record.",
-        "data": {
-            "title": {
-                "code": "validation_required",
-                "message": "Missing required value."
-            }
-        }
-    }
-    ```
+  The error field key remains `code`:
+
+  ```js
+  {
+      "status": 400, // <-- old: "code"
+      "message": "Failed to create record.",
+      "data": {
+          "title": {
+              "code": "validation_required",
+              "message": "Missing required value."
+          }
+      }
+  }
+  ```
 
 - ⚠️ New fields in the `GET /api/collections/{collection}/auth-methods` response.
-    _The old `authProviders`, `usernamePassword`, `emailPassword` fields are still returned in the response but are considered deprecated and will be removed in the future._
-    ```js
-    {
-        "mfa": {
-            "duration": 100,
-            "enabled": true
-        },
-        "otp": {
-            "duration": 0,
-            "enabled": false
-        },
-        "password": {
-            "enabled": true,
-            "identityFields": ["email", "username"]
-        },
-        "oauth2": {
-            "enabled": true,
-            "providers": [{"name": "gitlab", ...}, {"name": "google", ...}]
-        },
-        // old fields...
-    }
-    ```
+  _The old `authProviders`, `usernamePassword`, `emailPassword` fields are still returned in the response but are considered deprecated and will be removed in the future._
+
+  ```js
+  {
+      "mfa": {
+          "duration": 100,
+          "enabled": true
+      },
+      "otp": {
+          "duration": 0,
+          "enabled": false
+      },
+      "password": {
+          "enabled": true,
+          "identityFields": ["email", "username"]
+      },
+      "oauth2": {
+          "enabled": true,
+          "providers": [{"name": "gitlab", ...}, {"name": "google", ...}]
+      },
+      // old fields...
+  }
+  ```
 
 - ⚠️ Soft-deprecated the OAuth2 auth success `meta.avatarUrl` field in favour of `meta.avatarURL`.

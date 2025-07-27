@@ -4,7 +4,56 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="%sveltekit.assets%/app.webmanifest" />
+		
+		<!-- PWA Meta Tags -->
+		<meta name="theme-color" content="#2563eb" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="MyRecipeBox" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="msapplication-config" content="%sveltekit.assets%/browserconfig.xml" />
+		<meta name="msapplication-TileColor" content="#2563eb" />
+		<meta name="msapplication-tap-highlight" content="no" />
+		
+		<!-- Apple Touch Icons -->
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/icons/icon-152x152.png" />
+		<link rel="apple-touch-icon" sizes="152x152" href="%sveltekit.assets%/icons/icon-152x152.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/icons/icon-192x192.png" />
+		<link rel="apple-touch-icon" sizes="167x167" href="%sveltekit.assets%/icons/icon-192x192.png" />
+		
+		<!-- Splash Screen Images -->
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-2048-2732.png" sizes="2048x2732" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-1668-2224.png" sizes="1668x2224" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-1536-2048.png" sizes="1536x2048" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-1125-2436.png" sizes="1125x2436" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-1242-2208.png" sizes="1242x2208" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-750-1334.png" sizes="750x1334" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/splash/apple-splash-640-1136.png" sizes="640x1136" />
+		
 		%sveltekit.head%
+		
+		<!-- Theme initialization script to prevent flash -->
+		<script>
+			(function() {
+				const theme = localStorage.getItem('theme') || 'system';
+				const isDark = theme === 'dark' || 
+					(theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				
+				console.log('Initial script - theme:', theme, 'isDark:', isDark);
+				
+				if (isDark) {
+					document.documentElement.classList.add('dark');
+					console.log('Initial script added dark class');
+				} else {
+					document.documentElement.classList.remove('dark');
+					console.log('Initial script removed dark class');
+				}
+			})();
+		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
