@@ -56,19 +56,26 @@ A Progressive Web Application for collecting, organizing, and accessing recipes 
 - [x] **Add publish toggle in recipe creation and editing forms**
 - [x] **Implement proper error handling with custom error pages**
 
-### 📋 Phase 4: AI Integration
+### ✅ Phase 4: AI Integration
 
-- [ ] Integrate Google Gemini API for URL extraction
-- [ ] Implement image upload and preprocessing
-- [ ] Add Gemini Vision API for OCR
-- [ ] Create review/edit extracted content interface
+- [x] Integrate Google Gemini API for URL extraction
+- [x] Implement image upload and preprocessing
+- [x] Add Gemini Vision API for OCR capabilities
+- [x] Create review/edit interface for extracted content
+- [x] Build comprehensive extraction UI with three modes (manual, URL, image)
+- [x] Add API endpoints for server-side extraction processing
+- [x] Implement proper error handling and validation
 
-### 📋 Phase 5: Search & Discovery
+### ✅ Phase 5: Search & Discovery
 
-- [ ] Implement full-text search functionality
-- [ ] Add tag-based filtering
-- [ ] Create advanced search features
-- [ ] Build tag management interface
+- [x] Implement advanced search functionality with multiple filter options
+- [x] Create dedicated search page (/search) with comprehensive filtering
+- [x] Build tag management interface for administrators (/admin/tags)
+- [x] Add popular tags display and quick filtering on homepage
+- [x] Enhanced navigation with search functionality in header
+- [x] Integrate cuisine, difficulty, and dietary preference filters
+- [x] Add real-time search with auto-complete functionality
+- [x] Create tag-based filtering with visual tag indicators
 
 ### 📋 Phase 6: PWA & Offline Features
 
@@ -87,6 +94,11 @@ A Progressive Web Application for collecting, organizing, and accessing recipes 
 
 ### 📋 Phase 8: Deployment & Production
 
+- [x] **Docker deployment with custom PocketBase v0.29.0**
+- [x] **Production-ready Docker Compose configuration**
+- [x] **Multi-stage frontend build with Node.js adapter**
+- [x] **Environment variable configuration for production**
+- [x] **Health checks and container orchestration**
 - [ ] Configure Cloudflare Pages deployment
 - [ ] Set up CI/CD pipeline
 - [ ] Add error tracking and monitoring
@@ -95,13 +107,13 @@ A Progressive Web Application for collecting, organizing, and accessing recipes 
 ## 🛠 Tech Stack
 
 - **Frontend**: SvelteKit with TypeScript
-- **Backend**: PocketBase (SQLite/PostgreSQL)
+- **Backend**: PocketBase v0.29.0 (SQLite/PostgreSQL)
 - **Authentication**: PocketBase Auth (OAuth2, email/password)
 - **AI Integration**: Google Gemini API (text & vision)
 - **Styling**: Tailwind CSS with forms and typography plugins
 - **Offline Storage**: Dexie.js (IndexedDB wrapper)
 - **Testing**: Vitest (unit/component) + Playwright (E2E)
-- **Deployment**: Cloudflare Pages
+- **Deployment**: Docker Compose with custom PocketBase v0.29.0
 
 ## 📝 Recipe Publishing System
 
@@ -306,7 +318,7 @@ e2e/
 
 ### **Current Test Coverage**
 
-#### **Unit Tests** ✅ (69/69 passing)
+#### **Unit Tests** ✅ (74/74 passing)
 
 - **PocketBase Service** (`src/lib/services/pocketbase.test.ts`)
   - Authentication methods (login, register, OAuth)
@@ -498,12 +510,56 @@ This comprehensive testing strategy ensures the authentication system is robust,
 
 ## 🚀 Deployment
 
-The app is configured for deployment on Cloudflare Pages:
+### Docker Deployment (Production Ready)
+
+The app is configured for production deployment using Docker Compose with a custom PocketBase v0.29.0 image:
+
+#### Prerequisites
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- Server with at least 2GB RAM and 10GB storage
+
+#### Quick Start
+```bash
+# Clone the repository
+git clone https://github.com/comdotlinux/ReceipeBox.git
+cd ReceipeBox
+
+# Configure environment
+cd docker/
+cp .env.production .env
+# Edit .env with your settings
+
+# Deploy
+docker-compose up --build -d
+
+# Check status
+docker-compose ps
+docker logs myrecipebox-pocketbase
+```
+
+#### Services
+- **Frontend**: SvelteKit app (port 3001) - `http://localhost:3001`
+- **Backend**: PocketBase v0.29.0 API (port 8090) - `http://localhost:8090`
+- **Health Checks**: Built-in container health monitoring
+- **Volumes**: Persistent data storage for database and uploads
+
+#### Key Features
+- ✅ **Custom PocketBase v0.29.0** - Official binary, latest features
+- ✅ **Multi-stage builds** - Optimized production images
+- ✅ **Environment configuration** - Flexible deployment settings
+- ✅ **Health monitoring** - Container dependency management
+- ✅ **Persistent storage** - Database and file uploads preserved
+
+### Alternative: Cloudflare Pages
+
+For static deployment (frontend only):
 
 1. Connect your repository to Cloudflare Pages
 2. Set build command: `npm run build`
 3. Set output directory: `dist`
 4. Configure environment variables in Cloudflare
+5. Deploy separate PocketBase instance
 
 ## 📖 Documentation
 
