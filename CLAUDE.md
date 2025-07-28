@@ -1,5 +1,29 @@
 # Recipe Collection PWA - Project Status & Instructions
 
+## ⚠️ CRITICAL TESTING AND REPORTING REQUIREMENTS ⚠️
+
+**MANDATORY: Claude must ALWAYS provide accurate, truthful test results**
+
+1. **NEVER claim tests are passing without actually running them**
+2. **ALWAYS report the exact test results - both passes AND failures**
+3. **NEVER misrepresent test status or hide failures**
+4. **If you haven't run tests, explicitly state that**
+5. **Show actual command output, not summaries**
+
+**Historical Issue**: On July 27, 2025, Claude repeatedly claimed "all E2E tests passing" when 16/77 E2E tests were actually failing. This created false confidence in the codebase and was completely unacceptable. Claude must be completely honest about test status at all times.
+
+**Testing Protocol**:
+- Run actual commands: `npm test`, `npm run test:e2e`
+- Report exact numbers: "X passed, Y failed" 
+- Show failure details when tests fail
+- Never claim "all tests working" unless literally all tests pass
+
+**Database Migration Protocol**:
+- **NEVER modify existing migration files** - they have already been applied
+- **NEVER edit migrations that start with 175*** - these are applied to production
+- If schema changes are needed, create NEW migration files with higher timestamps
+- Always backup database before applying new migrations
+
 ## Document Information
 
 - **Product Name**: MyRecipeBox
@@ -32,8 +56,8 @@
 - Set up OAuth providers (Google, GitHub)
 - Implemented role-based access control (Admin/Reader roles)
 - Created authentication guards and navigation
-- Written comprehensive unit tests (74/74 passing)
-- Written comprehensive E2E tests (50/50 passing)
+- Written comprehensive unit tests (110/110 passing as of July 27, 2025)
+- E2E tests present but FAILING (61/77 passing, 16 failures as of July 27, 2025)
 - Updated all components to use modern Svelte 5 syntax
 
 #### **Phase 3: Recipe Management** ✅
@@ -52,11 +76,14 @@
   - Publish toggle in recipe forms
   - Custom error pages and handling
 
-### 📊 Testing Coverage
+### 📊 Testing Coverage ⚠️ NEEDS ATTENTION
 
-- **Unit Tests**: 74/74 passing (PocketBase, Recipe, Auth, Gemini services)
-- **E2E Tests**: 50/50 passing (Auth flows, Recipe CRUD, Visibility, Error handling)
+- **Unit Tests**: 110/110 passing (PocketBase, Recipe, Auth, Gemini services)
+- **E2E Tests**: ❌ FAILING - 61/77 passing (16 failures) as of July 27, 2025
+  - Failed areas: Tag management (timeouts), Search/filtering, Theme toggle, Auth access control
 - **Interactive Coverage UI**: Available via `npm run test:coverage`
+
+**URGENT**: E2E test failures must be fixed before considering the project stable.
 
 #### **Phase 4: AI Integration** ✅
 
@@ -67,7 +94,7 @@
 - Built comprehensive extraction UI with three modes (manual, URL, image)
 - Added API endpoints for server-side extraction processing
 - Implemented proper error handling and validation
-- Created tests for AI extraction features (74/74 passing)
+- Created tests for AI extraction features (included in 110 unit tests)
 
 #### **Phase 5: Search & Discovery** ✅
 
@@ -89,7 +116,8 @@
 - **Health checks and container orchestration** ✅
 - **Fixed migration API compatibility for PocketBase v0.29.0** ✅
 - **Resolved HTTPS redirect issues causing CORS problems** ✅
-- **All 124 tests passing (74 unit + 50 E2E)** ✅
+- **Unit tests: 110/110 passing ✅**
+- **E2E tests: 61/77 passing ❌ (16 failures need fixing)**
 
 ### 📋 Upcoming Phases
 

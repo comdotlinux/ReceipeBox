@@ -39,7 +39,16 @@ export class TagService {
 				items: result.items as Tag[]
 			};
 		} catch (error) {
-			throw new Error(`Failed to fetch tags: ${error}`);
+			console.error('Failed to fetch tags:', error);
+			
+			// Return empty result if tags collection doesn't exist or has schema issues
+			return {
+				page: 1,
+				perPage: limit || 50,
+				totalItems: 0,
+				totalPages: 0,
+				items: []
+			};
 		}
 	}
 

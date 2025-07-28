@@ -139,6 +139,33 @@ describe('PocketBaseService', () => {
 			expect(result.record.email).toBe('test@gmail.com');
 			expect(result.token).toBe('oauth-token');
 		});
+
+		it('should set reader role for OAuth users without role', async () => {
+			const mockAuth = {
+				authWithOAuth2: vi.fn().mockResolvedValue({
+					record: { id: '1', email: 'test@gmail.com', name: 'Google User' }, // No role
+					token: 'oauth-token'
+				}),
+				update: vi.fn().mockResolvedValue({
+					id: '1', 
+					email: 'test@gmail.com', 
+					name: 'Google User', 
+					role: 'reader'
+				})
+			};
+
+			mockPocketBase.collection.mockReturnValue(mockAuth);
+
+			const result = await pb.loginWithGoogle();
+
+			expect(mockAuth.authWithOAuth2).toHaveBeenCalledWith({
+				provider: 'google'
+			});
+			expect(mockAuth.update).toHaveBeenCalledWith('1', {
+				role: 'reader'
+			});
+			expect(result.record.role).toBe('reader');
+		});
 	});
 
 	describe('Error Handling', () => {

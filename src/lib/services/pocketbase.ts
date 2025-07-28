@@ -139,8 +139,17 @@ class PocketBaseService {
 			const authData = await this.pb.collection('users').authWithOAuth2({
 				provider: 'google'
 			});
+			
+			// Ensure new OAuth users have reader role
+			let user = authData.record as User;
+			if (!user.role) {
+				user = await this.pb.collection('users').update(user.id, {
+					role: 'reader'
+				}) as User;
+			}
+			
 			return {
-				record: authData.record as User,
+				record: user,
 				token: authData.token
 			};
 		} catch (error) {
@@ -153,8 +162,17 @@ class PocketBaseService {
 			const authData = await this.pb.collection('users').authWithOAuth2({
 				provider: 'github'
 			});
+			
+			// Ensure new OAuth users have reader role
+			let user = authData.record as User;
+			if (!user.role) {
+				user = await this.pb.collection('users').update(user.id, {
+					role: 'reader'
+				}) as User;
+			}
+			
 			return {
-				record: authData.record as User,
+				record: user,
 				token: authData.token
 			};
 		} catch (error) {

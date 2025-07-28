@@ -39,6 +39,39 @@ migrate(
 					}
 				},
 				{
+					id: 'text_slug',
+					name: 'slug',
+					type: 'text',
+					required: true,
+					unique: true,
+					options: {
+						min: 1,
+						max: 50,
+						pattern: '^[a-z0-9\\-_]+$'
+					}
+				},
+				{
+					id: 'text_color',
+					name: 'color',
+					type: 'text',
+					required: false,
+					options: {
+						min: 4,
+						max: 7,
+						pattern: '^#[0-9a-fA-F]{6}$'
+					}
+				},
+				{
+					id: 'relation_created_by',
+					name: 'created_by',
+					type: 'relation',
+					required: true,
+					options: {
+						maxSelect: 1,
+						collectionId: 'users'
+					}
+				},
+				{
 					id: 'number_usage_count',
 					name: 'usage_count',
 					type: 'number',

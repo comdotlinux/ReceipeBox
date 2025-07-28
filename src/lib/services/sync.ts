@@ -159,9 +159,9 @@ class SyncService {
 			console.log(`Cached ${response.items.length} recipes`);
 
 			// Get and cache tags
-			const tags = await tagService.getTags();
-			await offlineService.cacheTags(tags);
-			console.log(`Cached ${tags.length} tags`);
+			const tagsResponse = await tagService.getTags();
+			await offlineService.cacheTags(tagsResponse.items);
+			console.log(`Cached ${tagsResponse.items.length} tags`);
 
 		} catch (error) {
 			console.error('Failed to pull server changes:', error);
